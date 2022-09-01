@@ -2,6 +2,10 @@
 
 amvstrm's API V1/V2 is still in developements.  
 
+## News
+
+We are now uploading our API source code. They are in development and Never use this API for production. 
+
 ## Usage
 
 Please read the usage of our API on the documentation page. [Usages](https://docs.amvstr.ml/docs/info#api-information)
@@ -28,6 +32,12 @@ This is the comparison list of V1 and V2...
     - api-server-2.amvstr.ml
   - Slower (Web Scraping)
   - Compatible with amvstrm V1
+
+## Credit
+
+- @consumet/extensions : https://github.com/consumet/consumet.ts
+- riimuru/gogoanime (Scrapper Code) : https://github.com/riimuru/gogoanime
+- ChrisMichaelPerezSantiago/gogoanime (Scrapper Code) : https://github.com/ChrisMichaelPerezSantiago/gogoanime
 
 ## License
 

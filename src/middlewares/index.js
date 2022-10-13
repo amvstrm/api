@@ -1,8 +1,10 @@
 import { compose } from 'compose-middleware';
-import { errorHandler, notFound } from './middlewares.js';
+import { errorHandler, notFound, methodNotAllowed, badrequest } from './middlewares.js';
 
 const middleware = compose([
   notFound,
+  methodNotAllowed,
+  badrequest,
   errorHandler
 ]);
 

@@ -73,8 +73,8 @@ router.get("/info/:id", cache("7 days"), async (req, res, next) => {
     res.status(200).json({
       status: 200,
       data: {
-        id: 113813,
-        idMal: 40839,
+        id: data.data.Media.id,
+        idMal: data.data.Media.idMal,
         title: data.data.Media.title,
         description: data.data.Media.description,
         coverImage: data.data.Media.coverImage,
@@ -128,33 +128,34 @@ router.get("/stream", cache("30 minutes"), async (req, res, next) => {
     const id = req.query.id;
     const malid = req.query.mal || null;
     const aniid = req.query.ani || null;
-    const slug = id.split("-episode-")[0];
     const data = await gogoprovider.fetchEpisodeSources(id);
-    let streamurl;
-    for (let i = 0; i < data.sources.length; i++) {
-      switch (data.sources[i].isM3U8) {
-        case data.sources[0].isM3U8 === true:
-          streamurl = data.sources[0].url;
-          break;
-        case data.sources[1].isM3U8 === true:
-          streamurl = data.sources[1].url;
-          break;
-        case data.sources[2].isM3U8 === true:
-          streamurl = data.sources[2].url;
-          break;
-        case data.sources[0].isM3U8 === false:
-          streamurl = "";
-          break;
-        case data.sources[1].isM3U8 === false:
-          streamurl = "";
-          break;
-        case data.sources[2].isM3U8 === false:
-          streamurl = "";
-          break;
-      }
-    }
-    console.log();
+    // let streamurl;
+    // for (let i = 0; i < data.sources.length; i++) {
+    //   switch (data.sources[i].isM3U8) {
+    //     case data.sources[0].isM3U8 === true:
+    //       streamurl = data.sources[0].url;
+    //       break;
+    //     case data.sources[1].isM3U8 === true:
+    //       streamurl = data.sources[1].url;
+    //       break;
+    //     case data.sources[2].isM3U8 === true:
+    //       streamurl = data.sources[2].url;
+    //       break;
+    //     case data.sources[0].isM3U8 === false:
+    //       streamurl = "";
+    //       break;
+    //     case data.sources[1].isM3U8 === false:
+    //       streamurl = "";
+    //       break;
+    //     case data.sources[2].isM3U8 === false:
+    //       streamurl = "";
+    //       break;
+    //   }
+    // }
+    // console.log();
     res.json({
+      Info: 'Some anime stream from .mp4 will not be available in this api. Refer to /api/v1/stream to get it',
+      player: {
       id: {
         mal: malid,
         ani: aniid,
@@ -163,20 +164,19 @@ router.get("/stream", cache("30 minutes"), async (req, res, next) => {
       episodes: id.split("-episode-")[1],
       stream: data.sources,
       iframe: data.headers.Referer,
-      player: {
         plyr: {
-          main: `https://plyr.link/p/player.html#${base64encode(streamurl)}`,
+          main: `https://plyr.link/p/player.html#${base64encode(data.sources[4].url)}`,
           backup: `https://plyr.link/p/player.html#${base64encode(
-            data.sources[1].url === undefined ? null : data.sources[1].url
+            data.sources[4].url === undefined ? null : data.sources[1].url
           )}`,
         },
         nspl: {
           main: `https://player.nscdn.ml/player.html?p=${base64encode(
-            `&title=${id}&file=${streamurl}`
+            `&title=${id}&file=${data.sources[4].url}`
           )}`,
           backup: `https://player.nscdn.ml/player.html?p=${base64encode(
             `&title=${id}&file=${
-              data.sources[1].url === undefined ? null : data.sources[1].url
+              data.sources[4].url === undefined ? null : data.sources[1].url
             }`
           )}`,
         },

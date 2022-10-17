@@ -10,7 +10,7 @@ Please read the usage of our API on the documentation page. [Usages](https://doc
 
 This is the comparison list of V1 and V2...
 
-- V2 (Comming Soon)
+- V2 (In Development)
   - Using ModuleJS
   - Anilist Info Based
   - 2 Fast Server and better cache system to save loading times (Redis/Memory)

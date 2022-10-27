@@ -19,7 +19,7 @@ This is the comparison list of V1 and V2...
   - More Route and Feature
   - Faster than V1 (fetch from official Anilist API / [Consumet](https://github.com/consumet/consumet.ts) for fetching video/info backup source)
   - Compatible with amvstrm V2 (SOON)
-  
+  - Swagger Documentation
 - V1 (✔)
   - Using CommonJS
   - Gogoanime Info Based (Low Info)

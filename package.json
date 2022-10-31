@@ -8,7 +8,6 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "lint": "eslint --fix src",
-    "test": "jest"
   },
   "author": "amvstrm",
   "repository": {

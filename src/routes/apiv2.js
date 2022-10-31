@@ -20,14 +20,13 @@ const router = express.Router();
 const cache = apicache.middleware;
 
 // IF YOU HAVE REDIS DB YOU CAN USE IT TO CACHE THE DATA
-
 // const redisClient = createClient({
 //   host: process.env.REDIS_URL,
 //   port: process.env.REDIS_PORT,
 //   password: process.env.REDIS_PASSWORD,
+//   legacyMode: true
 // });
-
-// const cache = apiCache.options({
+// const cache = apicache.options({
 //   redisClient,
 // }).middleware;
 

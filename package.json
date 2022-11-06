@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "lint": "eslint --fix src",
+    "lint": "eslint --fix src"
   },
   "author": "amvstrm",
   "repository": {

@@ -2,6 +2,8 @@
 
 amvstrm's API V1/V2 is still in developements.  
 
+:warning: **Since V2 use Anilist API, there will be a rate limit (90 per min). Please do not requests too much on route v2 (_except : /stream, /download and /episode_)**
+
 ## Usage
 
 Please read the usage of our API on the documentation page. [Usages](https://docs.amvstr.ml/docs/info#api-information)

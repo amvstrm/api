@@ -2,6 +2,11 @@
 
 amvstrm's API that powered [amvstr.ml](https://amvstr.ml)
 
+## Warning
+
+__Do not use https://api.amvstr.ml/ URL yet.   
+It is recommended to use https://new-api.amvstr.ml/ instead.__
+
 ## Features
 
 - V2

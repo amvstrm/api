@@ -2,11 +2,17 @@
   "version": 2,
   "builds": [
     {
-      "src": "./src/index.js",
+      "src": "index.js",
       "use": "@vercel/node"
     }
   ],
-  "routes":[
-     { "src": "/(.*)", "headers": {"cache-control": "s-maxage=2592000"}, "dest": "/src/index.js"}
+  "routes": [
+    {
+      "src": "/(.*)",
+      "headers": { 
+        "cache-control": "public, s-maxage=604800"
+      },
+      "dest": "index.js"
+    }
   ]
-} 
+}

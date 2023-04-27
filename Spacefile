@@ -1,0 +1,10 @@
+v: 0
+app_name: "amvstrmAPI"
+micros:
+  - name: amvstrmAPI
+    src: .
+    engine: nodejs16
+    run: node index.js
+    dev: npm run dev
+    primary: true
+    public: true

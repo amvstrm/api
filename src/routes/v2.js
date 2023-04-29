@@ -20,26 +20,23 @@ router.get("/stream/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
     const cors = req.query.cors;
-    let setcors = "";
+    
     const data = await v1.getStreamHLS(id);
     const mainstrm =
       data.sources.find((item) => item.quality === "default") ||
       data.sources[0].url;
     const bkstrm = data.sources.find((item) => item.quality === "backup") || null;
     const dtatrack = !data.tracks ? "" : data.tracks[0];
+
+    let setcors = "";
+
     if (cors === "s1") {
       setcors = "https://cors-stream.amvstr.ml/";
     }
     if (cors === "s2") {
       setcors = "https://cors-stream-2.amvstr.ml/";
     }
-    if (cors !== "cors1" && cors !== "cors2") {
-      const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
-      if (urlRegex.test(req.query.cors) === false) {
-        setcors = "https://cors-stream.amvstr.ml/";
-      }
-      setcors = req.query.cors
-    }
+    
     res.status(200).json(
       successRes(200, `${cors ? 'CORS ' + setcors + ' APPLIED TO THE EMBEDED PLAYER' : 'success'}`, {
         info: data.info,

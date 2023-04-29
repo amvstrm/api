@@ -2,6 +2,11 @@
 
 amvstrm's API that powered [amvstr.ml](https://amvstr.ml)
 
+## Disclaimer
+
+This API is different from the one that is use in <https://amvstr.ml>.
+Please use <https://new-api.amvstr.ml> instead.
+
 ## Features
 
 - V2
@@ -19,7 +24,7 @@ amvstrm's API that powered [amvstr.ml](https://amvstr.ml)
 
 This API only have V2 docs but in the future, V1 and V2 will be merge together...  
 
-V2 : https://docsapi-amvstrm.pages.dev/
+V2 : <https://docsapi-amvstrm.pages.dev/>
 
 ## Credit
 

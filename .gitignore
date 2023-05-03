@@ -73,3 +73,5 @@ typings/
 .serverless
 
 .space
+
+package_lock.json

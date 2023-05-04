@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "index.js",
+      "src": "./src/index.js",
       "use": "@vercel/node"
     }
   ],
@@ -12,7 +12,7 @@
       "headers": { 
         "cache-control": "public, s-maxage=604800"
       },
-      "dest": "index.js"
+      "dest": "/src/index.js"
     }
   ]
 }

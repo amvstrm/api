@@ -14,7 +14,7 @@ const keys = {
 
 let referer = "";
 export const extract = async (id) => {
-  const BASE_URL = "https://www1.gogoanime.bid/";
+  const BASE_URL = "https://gogoanime.cl/";
   const datapage = await axios.get(`${BASE_URL}` + id, {
     headers: {
       "User-Agent": USER_AGENT,
@@ -24,8 +24,7 @@ export const extract = async (id) => {
   const title = x$('.anime_video_body_cate > .anime-info > a').attr('title');
   const ani_id = x$('.anime_video_body_cate > .anime-info > a').attr('href').replace('\/category\/', '');
   const server = x$("#load_anime > div > div > iframe").attr("src");
-  const videoUrl = new URL("https:" + server);
-
+  const videoUrl = new URL(server);
   referer = videoUrl.href;
   const res = await axios.get(videoUrl.href, {
     headers: {

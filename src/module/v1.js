@@ -470,7 +470,7 @@ const getStreamHLS = async (id) => {
   } catch (err) {
     if (err.response) {
       return {
-        code: err.response.status,
+        code: err.response.status || 500,
         message: err.message,
       };
     }

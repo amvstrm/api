@@ -22,11 +22,14 @@ Please use <https://new-api.amvstr.ml> instead.
 
 ## Documentation
 
-This API only have V2 docs but in the future, V1 and V2 will be merge together...  
+__WORK IN PROGRESS__
 
-V2 : <https://docsapi-amvstrm.pages.dev/>
+You can checkout our new [API Docs](https://amvdocs.pages.dev/api/introduction#routes) with all available routes with information.  
+*This docs info is about the new API. If you are looking for the old API docs, you can access it [Here](https://docsapi-amvstrm.pages.dev/)*
 
 ## Credit
+
+We are using both of these to power our application...
 
 - [@consumet/extensions](https://github.com/consumet/consumet.ts)
 - [riimuru/gogoanime-api](https://github.com/riimuru/gogoanime-api)

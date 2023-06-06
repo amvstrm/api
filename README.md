@@ -2,10 +2,18 @@
 
 amvstrm's API that powered [amvstr.ml](https://amvstr.ml)
 
+_This API is different from the one that is use in <https://amvstr.ml>.
+Please use <https://new-api.amvstr.ml> instead._
+
 ## Disclaimer
 
-This API is different from the one that is use in <https://amvstr.ml>.
-Please use <https://new-api.amvstr.ml> instead.
+__Due to the Function Execution exceeded 270% and too many request have been made, We recommended to deploy this API by yourself to any provider that you like.__
+<details>
+  <summary>Usage data</summary>
+  
+  ![image](https://github.com/amvstrm/api/assets/53612429/0cfab738-fa32-42ad-8ddb-cebfff517869)
+
+</details>
 
 ## Features
 
@@ -22,11 +30,14 @@ Please use <https://new-api.amvstr.ml> instead.
 
 ## Documentation
 
-This API only have V2 docs but in the future, V1 and V2 will be merge together...  
+__WORK IN PROGRESS__
 
-V2 : <https://docsapi-amvstrm.pages.dev/>
+You can checkout our new [API Docs](https://amvdocs.pages.dev/api/introduction#routes) with all available routes with information.  
+*This docs info is about the new API. If you are looking for the old API docs, you can access it [Here](https://docsapi-amvstrm.pages.dev/)*
 
 ## Credit
+
+We are using both of these to power our application...
 
 - [@consumet/extensions](https://github.com/consumet/consumet.ts)
 - [riimuru/gogoanime-api](https://github.com/riimuru/gogoanime-api)

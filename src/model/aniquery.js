@@ -131,3 +131,18 @@ query Query {
     }
   }
 }`;
+
+export const airingScheduleQuery = (
+  page = 1,
+  perPage = 20,
+  weekStart,
+  weekEnd,
+  notYetAired
+) =>
+  `query { 
+    Page(
+      page: ${page}, 
+      perPage: ${perPage}) 
+      { pageInfo 
+        { total perPage currentPage lastPage hasNextPage } 
+        airingSchedules( notYetAired: ${notYetAired}, airingAt_greater: ${weekStart}, airingAt_lesser: ${weekEnd}) { airingAt episode media { id description idMal title { romaji english userPreferred native } countryOfOrigin description popularity bannerImage coverImage { extraLarge large medium color } genres averageScore seasonYear format } } } }`;

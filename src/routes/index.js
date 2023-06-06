@@ -15,11 +15,11 @@ function parseEnvList(env) {
   return env.split(',');
 }
 
-const allowlist = parseEnvList(process.env.BYPASS_RATELIMITER)
+const allowlist = parseEnvList(process.env.ALLOWLIST)
 const limiter = rateLimit({
   windowMs: 60000,
-  max: (req) => {
-    if (!allowlist.includes(req.headers.origin && req.headers.host))
+  max: (req, res) => {
+    if (!allowlist.includes(req.headers.origin || req.headers.host))
       return process.env.RATE_LIMIT || 300;
     else return 0;
   },
@@ -32,7 +32,7 @@ const limiter = rateLimit({
     });
   },
   skip: async (req) => {
-    return allowlist.includes(req.headers.origin);
+    return allowlist.includes(req.headers.origin || req.headers.host);
   },
 });
 

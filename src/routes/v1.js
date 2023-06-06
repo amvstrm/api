@@ -1,7 +1,6 @@
 import { Router } from "express";
 
 import v1 from "../module/v1.js";
-import { successRes, errorRes } from "../model/res.js";
 
 const router = Router();
 

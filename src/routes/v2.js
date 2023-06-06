@@ -42,20 +42,20 @@ router.get("/stream/:id", async (req, res, next) => {
         iframe: data.iframe,
         plyr: {
           main: `https://plyr.link/p/player.html#${base64encode(
-            setcors + mainstrm.url
+            mainstrm.url
           )}`,
           backup: `https://plyr.link/p/player.html#${base64encode(
-            setcors + bkstrm.url
+            bkstrm.url
           )}`,
         },
         nspl: {
           main: `https://player.nscdn.ml/player.html?p=${base64encode(
-            `&title=${id}&file=${setcors + mainstrm.url}&thumbnails=${
+            `&title=${id}&file=${ mainstrm.url }&thumbnails=${
               dtatrack.file
             }`
           )}`,
           backup: `https://player.nscdn.ml/player.html?p=${base64encode(
-            `&title=${id}&file=${setcors + bkstrm.url}&thumbnails=${
+            `&title=${id}&file=${ bkstrm.url }&thumbnails=${
               dtatrack.file
             }`
           )}`,

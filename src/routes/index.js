@@ -8,19 +8,12 @@ import v2 from "./v2.js";
 dotenv.config();
 const router = Router();
 
-function parseEnvList(env) {
-  if (!env) {
-      return [];
-  }
-  return env.split(',');
-}
-
-const allowlist = parseEnvList(process.env.ALLOWLIST)
+const allowlist = process.env.ALLOWLIST.split(',')
 const limiter = rateLimit({
   windowMs: 60000,
   max: (req, res) => {
     if (!allowlist.includes(req.headers.origin || req.headers.host))
-      return process.env.RATE_LIMIT || 300;
+      return parseInt(process.env.RATE_LIMIT) || 300;
     else return 0;
   },
   standardHeaders: false,

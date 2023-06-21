@@ -8,3 +8,18 @@ micros:
     dev: npm run dev
     primary: true
     public: true
+    presets:
+      env:
+        - name: RATE_LIMIT
+          description: Rate limit your API request.
+          default: '300'
+        - name: ALLOWLIST
+          description: Set URL list to bypass Rate limter and CORS.
+          default: '*'
+        - name: BLOCK_WITH_CORS
+          description: Enable CORS to block the URL that is not in the list
+          default: 'false'
+        - name: SENTRY_DSN_URL
+          description: Track and monitor your API with Sentry.io
+          default: ''
+

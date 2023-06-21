@@ -69,13 +69,20 @@ const AnimeInfo = async (id) => {
       query,
     });
     const masdata = await FetchMalSyncData(data.data.Media.idMal);
+
+    let idprovider;
     let isDub = false;
-    if (masdata.data.Sites.Gogoanime) {
-      if (JSON.stringify(masdata.data.Sites.Gogoanime).includes("dub")) {
-        isDub = true;
+    if (!masdata || !masdata.data || !masdata.data.Sites) {
+      idprovider = null;
+    } else {
+      idprovider = await getIDeachProvider(masdata);
+      if (masdata.data.Sites.Gogoanime) {
+        if (JSON.stringify(masdata.data.Sites.Gogoanime).includes("dub")) {
+          isDub = true;
+        }
       }
     }
-    const idprovider = await getIDeachProvider(masdata);
+
     const res = {
       id: data.data.Media.id,
       idMal: data.data.Media.idMal,

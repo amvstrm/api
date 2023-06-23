@@ -89,6 +89,9 @@ router.get("/stream/skiptime/:id/:ep_id", async (req, res, next) => {
 router.get("/info/:id", async (req, res, next) => {
   try {
     const data = await v2.AnimeInfo(req.params.id);
+    if (data.error) {
+      next(data.error);
+    }
     res.json(successRes(200, "success", data));
   } catch (error) {
     next(error);
@@ -97,8 +100,9 @@ router.get("/info/:id", async (req, res, next) => {
 
 router.get("/recommendations/:id", async (req, res, next) => {
   try {
-    const data = await v2.AnimeRecommendations(req.params.id);
-    res.status(200).json(successRes(200, "success", { results: data }));
+    const data = await v2.AnimeRecommendations(req.params.id, req.query.page, req.query.limit);
+
+    res.status(200).json(successRes(200, "success", data ));
   } catch (error) {
     next(error);
   }
@@ -188,6 +192,9 @@ router.get("/search", async (req, res, next) => {
       req.query.p,
       req.query.limit
     );
+    if (data.error) {
+      next(data.error);
+    }
     res.json(successRes(200, "success", data));
   } catch (error) {
     next(error);
@@ -198,6 +205,9 @@ router.post("/search", async (req, res, next) => {
   try {
     const body_data = req.body;
     const data = await v2.AnimeAdvancedSearch(body_data);
+    if (data.error) {
+      next(data.error);
+    }
     res.json(successRes(200, "success", data));
   } catch (error) {
     next(error);

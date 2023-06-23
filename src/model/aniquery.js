@@ -98,12 +98,18 @@ query Query {
 }
 `;
 
-export const RecommendationsQuery = (id) => `
+export const RecommendationsQuery = (id, page, limit) => `
 query Query {
   Media(id: ${id}, type: ANIME) {
     id
     idMal
-    recommendations {
+    title {
+      romaji
+      english
+      native
+      userPreferred
+    }
+    recommendations(page: ${page}, perPage: ${limit}) {
       nodes {
         mediaRecommendation {
           id

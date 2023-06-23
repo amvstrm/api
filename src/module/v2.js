@@ -179,33 +179,25 @@ const AnimeAdvancedSearch = async (req_data) => {
   }
 };
 
-const AnimeRecommendations = async (id) => {
-  const query = RecommendationsQuery(id);
+const AnimeRecommendations = async (id, page = 1, limit = 12) => {
+  const query = RecommendationsQuery(id, page, limit);
   try {
     const Recndtdata = await FetchAnilist.post("", {
       query,
     });
-    const data = Recndtdata.data.data.Media;
-    const results = [];
-    for (const anime of data.recommendations.nodes) {
-      results.push({
-        id: anime.mediaRecommendation.id,
-        idMal: anime.mediaRecommendation.idMal,
-        title: anime.mediaRecommendation.title,
-        coverImage: anime.mediaRecommendation.coverImage,
-        bannerImage: anime.mediaRecommendation.bannerImage,
-        type: anime.mediaRecommendation.type,
-        format: anime.mediaRecommendation.format,
-        status: anime.mediaRecommendation.status,
-        episodes: anime.mediaRecommendation.episodes,
-        duration: anime.mediaRecommendation.duration,
-        score: {
-          averageScore: anime.mediaRecommendation.averageScore,
-          decimalScore: anime.mediaRecommendation.averageScore / 10,
-        },
+    const data = Recndtdata.data.data.Media
+    const recommendations =
+      Recndtdata.data.data.Media.recommendations.nodes.map((node) => {
+        return node.mediaRecommendation;
       });
-    }
-    return results;
+    return {
+      info: {
+        id: data.id,
+        idMal: data.idMal,
+        title: data.title,
+      },
+      results: recommendations
+    };
   } catch (err) {
     if (err.response) {
       return {
@@ -213,6 +205,7 @@ const AnimeRecommendations = async (id) => {
         message: err.message,
       };
     }
+    console.log(err);
     throw err;
   }
 };

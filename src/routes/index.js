@@ -8,7 +8,7 @@ import v2 from "./v2.js";
 dotenv.config();
 const router = Router();
 
-const allowlist = process.env.ALLOWLIST.split(',')
+const allowlist = process.env.ALLOWLIST.split(',') || ''
 const limiter = rateLimit({
   windowMs: 60000,
   max: (req, res) => {

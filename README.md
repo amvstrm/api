@@ -15,6 +15,13 @@ __Due to the Function Execution exceeded 270% and too many request have been mad
 
 </details>
 
+ALSOOOO....
+
+You can now install our app on deta.space with zero configuration.  
+[Install Now](https://deta.space/discovery/r/dx2yfbqmov6j8bxx)
+
+More info at our [DOCS](https://amvdocs.pages.dev/)
+
 ## Features
 
 - V2

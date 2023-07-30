@@ -6,8 +6,9 @@ import axios from "axios";
 import { load } from "cheerio";
 
 import { extract } from "../utils/stream/gogo.js";
+import httpStatus from "http-status";
 
-const BASE_URL = "https://gogoanime.cl/";
+const BASE_URL = "https://gogoanimehd.to/";
 const ajax_url = "https://ajax.gogo-load.com/";
 const popular_ongoing_url = `${ajax_url}ajax/page-recent-release-ongoing.html`;
 const recent_release_url = `${ajax_url}ajax/page-recent-release.html`;
@@ -90,7 +91,7 @@ const season = async (season, page = 1) => {
     if (err.response) {
       return {
         code: err.response.status,
-        message: err.message,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
       };
     }
     throw err;
@@ -166,7 +167,7 @@ const topair = async (page) => {
     if (err.response) {
       return {
         code: err.response.status,
-        message: err.message,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
       };
     }
     throw err;
@@ -198,7 +199,7 @@ const search = async (query, page = 1) => {
     if (err.response) {
       return {
         code: err.response.status,
-        message: err.message,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
       };
     }
     throw err;
@@ -235,7 +236,7 @@ const genres = async (genre, page) => {
     if (err.response) {
       return {
         code: err.response.status,
-        message: err.message,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
       };
     }
     throw err;
@@ -266,7 +267,7 @@ const newSeasons = async (page) => {
     if (err.response) {
       return {
         code: err.response.status,
-        message: err.message,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
       };
     }
     throw err;
@@ -298,7 +299,7 @@ const movies = async (aphab, page) => {
     if (err.response) {
       return {
         code: err.response.status,
-        message: err.message,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
       };
     }
     throw err;
@@ -330,7 +331,7 @@ const popular = async (page) => {
     if (err.response) {
       return {
         code: err.response.status,
-        message: err.message,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
       };
     }
     throw err;
@@ -367,7 +368,7 @@ const recentReleaseEpisodesType = async (page, type) => {
     if (err.response) {
       return {
         code: err.response.status,
-        message: err.message,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
       };
     }
     throw err;
@@ -407,7 +408,7 @@ const dllink = async (id) => {
     if (err.response) {
       return {
         code: err.response.status,
-        message: err.message,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
       };
     }
     throw err;
@@ -456,7 +457,7 @@ const animeInfo = async (id) => {
     if (err.response) {
       return {
         code: err.response.status,
-        message: err.message,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
       };
     }
     throw err;
@@ -467,14 +468,14 @@ const getStreamHLS = async (id) => {
   try {
     const data = await extract(id);
     return data;
-  } catch (err) {
-    if (err.response) {
+  } catch (error) {
+    if (error.response) {
       return {
-        code: err.response.status || 500,
-        message: err.message,
+        code: error.response.status || 500,
+        message: error.message,
       };
     }
-    throw err;
+    throw error;
   }
 };
 
@@ -510,7 +511,7 @@ const getEplist = async (id) => {
     if (err.response) {
       return {
         code: err.response.status,
-        message: err.message,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
       };
     }
 

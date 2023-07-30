@@ -20,7 +20,7 @@ router.get("/info/:id", async (req, res, next) => {
 // Route to search
 router.get("/search", async (req, res, next) => {
   try {
-    const data = await v1.search(req.query.q);
+    const data = await v1.search(req.query.q, req.query.p);
     if (data.error) {
       next(data.error);
     }
@@ -158,7 +158,6 @@ router.get("/genres", async (req, res, next) => {
   }
 });
 
-
 // Route to get genres for a specific ID
 router.get("/genres/:id", async (req, res, next) => {
   try {
@@ -218,6 +217,9 @@ router.get("/popular/:page", async (req, res, next) => {
 router.get("/download/:id", async (req, res, next) => {
   try {
     const data = await v1.dllink(req.params.id);
+    if (req.query.redirect === "true") {
+      return res.redirect(data.download);
+    }
     res.json(data)
   } catch (error) {
     next(error);

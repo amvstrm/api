@@ -20,7 +20,7 @@ const limiter = rateLimit({
   legacyHeaders: true,
   message: async (req, res) => {
     res.status(429).json({
-      status: 429,
+      code: 429,
       message: "Too many requests, please wait before sending another request.",
     });
   },

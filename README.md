@@ -2,8 +2,7 @@
 
 amvstrm's API that powered [amvstr.ml](https://amvstr.ml)
 
-_This API is different from the one that is use in <https://amvstr.ml>.
-Please use <https://new-api.amvstr.ml> instead._
+_Our amvstr.ml domain is down for no reason, please use https://api-amvstrm.nyt92.eu.org/ instead._
 
 ## Disclaimer
 
@@ -14,6 +13,13 @@ __Due to the Function Execution exceeded 270% and too many request have been mad
   ![image](https://github.com/amvstrm/api/assets/53612429/0cfab738-fa32-42ad-8ddb-cebfff517869)
 
 </details>
+
+ALSOOOO....
+
+You can now install our app on deta.space with zero configuration.  
+[Install Now](https://deta.space/discovery/r/dx2yfbqmov6j8bxx)
+
+More info at our [DOCS](https://amvdocs.pages.dev/)
 
 ## Features
 

@@ -4,10 +4,12 @@ import { META } from "@consumet/extensions";
 
 import v1 from "../module/v1.js";
 import v2 from "../module/v2.js";
+import { extract } from "../utils/stream/gogo.js";
 
 import { successRes, errorRes } from "../model/res.js";
 
 const AnilistModule = new META.Anilist();
+
 const router = Router();
 
 function base64encode(string) {
@@ -19,13 +21,18 @@ function base64encode(string) {
 router.get("/stream/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    const data = await v1.getStreamHLS(id);
+    const data = await extract(id);
+    if (data.code == 404) {
+      return res.status(404).json(errorRes(404, "Not found"));
+    }
 
     const mainstrm =
       data.sources.find((item) => item.quality === "default") ||
-      data.sources[0].url;
+      data.sources[0].url ||
+      null;
     const bkstrm =
       data.sources.find((item) => item.quality === "backup") || null;
+
     const dtatrack = !data.tracks ? "" : data.tracks[0];
 
     res.status(200).json(
@@ -40,23 +47,15 @@ router.get("/stream/:id", async (req, res, next) => {
         },
         iframe: data.iframe,
         plyr: {
-          main: `https://plyr.link/p/player.html#${base64encode(
-            mainstrm.url
-          )}`,
-          backup: `https://plyr.link/p/player.html#${base64encode(
-            bkstrm.url
-          )}`,
+          main: `https://plyr.link/p/player.html#${base64encode(mainstrm.url)}`,
+          backup: `https://plyr.link/p/player.html#${base64encode(bkstrm.url)}`,
         },
         nspl: {
-          main: `https://player.nscdn.ml/player.html?p=${base64encode(
-            `&title=${id}&file=${mainstrm.url}&thumbnails=${
-              dtatrack.file
-            }`
+          main: `https://nspl.nyt92.eu.org/player?p=${base64encode(
+            `&title=${id}&file=${mainstrm.url}&thumbnails=${dtatrack.file}`
           )}`,
-          backup: `https://player.nscdn.ml/player.html?p=${base64encode(
-            `&title=${id}&file=${bkstrm.url}&thumbnails=${
-              dtatrack.file
-            }`
+          backup: `https://nspl.nyt92.eu.org/player?p=${base64encode(
+            `&title=${id}&file=${bkstrm.url}&thumbnails=${dtatrack.file}`
           )}`,
         },
       })
@@ -100,9 +99,13 @@ router.get("/info/:id", async (req, res, next) => {
 
 router.get("/recommendations/:id", async (req, res, next) => {
   try {
-    const data = await v2.AnimeRecommendations(req.params.id, req.query.page, req.query.limit);
+    const data = await v2.AnimeRecommendations(
+      req.params.id,
+      req.query.page,
+      req.query.limit
+    );
 
-    res.status(200).json(successRes(200, "success", data ));
+    res.status(200).json(successRes(200, "success", data));
   } catch (error) {
     next(error);
   }

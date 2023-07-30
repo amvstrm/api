@@ -4,6 +4,7 @@ import axios from "axios";
 import { load } from "cheerio";
 import CryptoJS from "crypto-js";
 
+const BASE_URL = "https://gogoanimehd.to/";
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36";
 const keys = {
@@ -14,15 +15,28 @@ const keys = {
 
 let referer = "";
 export const extract = async (id) => {
-  const BASE_URL = "https://gogoanime.cl/";
-  const datapage = await axios.get(`${BASE_URL}` + id, {
-    headers: {
-      "User-Agent": USER_AGENT,
-    },
-  });
-  const x$ = load(datapage.data);
-  const title = x$('.anime_video_body_cate > .anime-info > a').attr('title');
-  const ani_id = x$('.anime_video_body_cate > .anime-info > a').attr('href').replace('\/category\/', '');
+  let datapg;
+  try {
+    const datapage = await axios.get(`${BASE_URL}` + id, {
+      headers: {
+        "User-Agent": USER_AGENT,
+      },
+    });
+    datapg = datapage.data
+  } catch (error) {
+    if (error.response) {
+      return {
+        code: error.response.status || 500,
+        message: error.message,
+      };
+    }
+    throw error;
+  }
+  const x$ = load(datapg);
+  const title = x$(".anime_video_body_cate > .anime-info > a").attr("title");
+  const ani_id = x$(".anime_video_body_cate > .anime-info > a")
+    .attr("href")
+    .replace("/category/", "");
   const server = x$("#load_anime > div > div > iframe").attr("src");
   const videoUrl = new URL(server);
   referer = videoUrl.href;
@@ -32,58 +46,55 @@ export const extract = async (id) => {
     },
   });
   const $ = load(res.data);
-  try {
-    const encyptedParams = await generateEncryptedAjaxParams(
-      $,
-      videoUrl.searchParams.get("id") ?? ""
-    );
-    const encryptedData = await axios.get(
-      `${videoUrl.protocol}//${videoUrl.hostname}/encrypt-ajax.php?${encyptedParams}`,
-      {
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-        },
-      }
-    );
-    const decryptedData = await decryptAjaxData(encryptedData.data.data);
-    if (!decryptedData.source)
-      throw new Error("No source found. Try a different server.");
-    let sources = [];
-    decryptedData.source.forEach((source) => {
-      sources.push({
-        url: source.file,
-        isM3U8: source.file.includes(".m3u8"),
-        quality: "default",
-      });
-    });
 
-    decryptedData.source_bk.forEach((source) => {
-      sources.push({
-        url: source.file,
-        isM3U8: source.file.includes(".m3u8"),
-        quality: "backup",
-      });
+  const encyptedParams = await generateEncryptedAjaxParams(
+    $,
+    videoUrl.searchParams.get("id") ?? ""
+  );
+  const encryptedData = await axios.get(
+    `${videoUrl.protocol}//${videoUrl.hostname}/encrypt-ajax.php?${encyptedParams}`,
+    {
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+      },
+    }
+  );
+  const decryptedData = await decryptAjaxData(encryptedData.data.data);
+  if (!decryptedData.source)
+    throw new Error("No source found. Try a different server.");
+  let sources = [];
+  decryptedData.source.forEach((source) => {
+    sources.push({
+      url: source.file,
+      isM3U8: source.file.includes(".m3u8"),
+      quality: "default",
     });
-    return {
-      info: {
-        title,
-        id: ani_id,
-        episode: id.split('-episode-')[1]
-      },
-      sources,
-      tracks: decryptedData.track.tracks,
-      iframe: {
-        default: videoUrl.href,
-        backup: decryptedData.linkiframe,
-      },
-    };
-  } catch (e) {
-    console.log(e);
-    throw new Error("Somthing went wrong" + ": " + e);
-  }
+  });
+
+  decryptedData.source_bk.forEach((source) => {
+    sources.push({
+      url: source.file,
+      isM3U8: source.file.includes(".m3u8"),
+      quality: "backup",
+    });
+  });
+  return {
+    info: {
+      title,
+      id: ani_id,
+      episode: id.split("-episode-")[1],
+    },
+    sources,
+    tracks: decryptedData.track.tracks,
+    iframe: {
+      default: videoUrl.href,
+      backup: decryptedData.linkiframe,
+    },
+  };
 };
 
 export const addSources = async (source) => {
+  const sources = [];
   if (source.file.includes("m3u8")) {
     const m3u8Urls = await axios
       .get(source.file, {
@@ -112,13 +123,12 @@ export const addSources = async (source) => {
         isM3U8: true,
       });
     }
-
-    return sources;
   }
   sources.push({
     url: source.file,
     isM3U8: source.file.includes(".m3u8"),
   });
+  return sources;
 };
 
 export const generateEncryptedAjaxParams = async ($, id) => {

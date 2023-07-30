@@ -3,9 +3,9 @@ import morgan from "morgan";
 import helmet from "helmet";
 import cors from "cors";
 import dotenv from "dotenv";
-import * as Sentry from "@sentry/node"
+import * as Sentry from "@sentry/node";
 
-dotenv.config()
+dotenv.config();
 
 import { notFound, errorHandler } from "./middlewares.js";
 import api from "./routes/index.js";
@@ -17,29 +17,27 @@ app.use(helmet());
 app.use(
   cors({
     origin:
-      process.env.BLOCK_WITH_CORS === 'true'
+      process.env.BLOCK_WITH_CORS === "true"
         ? !process.env.ALLOWLIST ||
           process.env.ALLOWLIST === "" ||
           process.env.ALLOWLIST === "*"
           ? "*"
-          : process.env.ALLOWLIST.split(",") 
+          : process.env.ALLOWLIST.split(",")
         : "*",
   })
 );
 app.use(json());
 
-
-if (process.env.SENTRY_DSN_URL) {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN_URL,
-    integrations: [
-      new Sentry.Integrations.Http({ tracing: true }),
-      new Sentry.Integrations.Express({ app }),
-      ...Sentry.autoDiscoverNodePerformanceMonitoringIntegrations(),
-    ],
-    tracesSampleRate: 1.0,
-  });
-}
+Sentry.init({
+  environment: process.env.NODE_ENV,
+  dsn: process.env.SENTRY_DSN_URL,
+  integrations: [
+    new Sentry.Integrations.Http({ tracing: true }),
+    new Sentry.Integrations.Express({ app }),
+    ...Sentry.autoDiscoverNodePerformanceMonitoringIntegrations(),
+  ],
+  tracesSampleRate: 0,
+});
 
 app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());
@@ -48,16 +46,14 @@ app.get("/", (req, res) => {
   res.json({
     code: 200,
     message: "success",
+    docs: "https://amvdocs.pages.dev/api/introduction",
   });
-});
-
-app.get("/debug-sentry", function mainHandler(req, res) {
-  throw new Error("My first Sentry error!");
 });
 
 app.use("/api", api);
 
 app.use(Sentry.Handlers.errorHandler());
+
 app.use(notFound);
 app.use(errorHandler);
 

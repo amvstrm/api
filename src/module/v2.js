@@ -1,4 +1,6 @@
 import axios from "axios";
+import httpStatus from "http-status";
+
 import {
   InfoQuery,
   SearchQ,
@@ -16,8 +18,15 @@ const FetchAnilist = axios.create({
 
 const FetchMalSyncData = async (malid) => {
   const data = axios
-    .get(`https://api.malsync.moe/mal/anime/${malid}`)
-    .catch((err) => err.message);
+    .get(`https://api.malsync.moe/mal/anime/${malid}`, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36",
+      },
+    })
+    .catch(
+      (err) => httpStatus[`${err.response.status}_MESSAGE`] || err.message
+    );
   return data;
 };
 
@@ -38,7 +47,7 @@ const getIDeachProvider = async (json) => {
       JSON.stringify(json.data.Sites.Zoro)
         .match(/"url":"(.*?)"/)[1]
         .match(/(.*)/)[0]
-        .replace("https://zoro.to/", "") || "";
+        .replace("https://aniwatch.to/", "") || "";
   }
   if (json.data.Sites["9anime"]) {
     id9anime =
@@ -83,7 +92,7 @@ const AnimeInfo = async (id) => {
       }
     }
 
-    const res = {
+    return {
       id: data.data.Media.id,
       idMal: data.data.Media.idMal,
       id_provider: idprovider,
@@ -111,12 +120,11 @@ const AnimeInfo = async (id) => {
       trailer: data.data.Media.trailer,
       studios: data.data.Media.studios.nodes,
     };
-    return res;
   } catch (err) {
     if (err.response) {
       return {
         code: err.response.status,
-        message: err.message,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
       };
     }
     throw err;
@@ -144,7 +152,7 @@ const AnimeSearch = async (query, page, limit) => {
     if (err.response) {
       return {
         code: err.response.status,
-        message: err.message,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
       };
     }
     throw err;
@@ -158,21 +166,15 @@ const AnimeAdvancedSearch = async (req_data) => {
       query: querys,
       variables: req_data,
     });
-    console.log({
-      variables: {
-        req_data,
-      },
-    });
-    const res = {
+    return {
       pageInfo: data.data.data.Page.pageInfo,
       data: data.data.data.Page.media,
     };
-    return res;
   } catch (err) {
     if (err.response) {
       return {
         code: err.response.status,
-        message: err.message,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
       };
     }
     throw err;
@@ -185,7 +187,7 @@ const AnimeRecommendations = async (id, page = 1, limit = 12) => {
     const Recndtdata = await FetchAnilist.post("", {
       query,
     });
-    const data = Recndtdata.data.data.Media
+    const data = Recndtdata.data.data.Media;
     const recommendations =
       Recndtdata.data.data.Media.recommendations.nodes.map((node) => {
         return node.mediaRecommendation;
@@ -196,13 +198,13 @@ const AnimeRecommendations = async (id, page = 1, limit = 12) => {
         idMal: data.idMal,
         title: data.title,
       },
-      results: recommendations
+      results: recommendations,
     };
   } catch (err) {
     if (err.response) {
       return {
         code: err.response.status,
-        message: err.message,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
       };
     }
     console.log(err);
@@ -256,7 +258,7 @@ const AniSkipData = async (id, ep_id) => {
     if (err.response) {
       return {
         code: err.response.status,
-        message: err.message,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
       };
     }
     throw err;

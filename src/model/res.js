@@ -1,3 +1,5 @@
+import httpStatus from "http-status";
+
 export function successRes(status, message, data) {
   return {
     code: status || 200,
@@ -8,8 +10,8 @@ export function successRes(status, message, data) {
 
 export function errorRes(status, message) {
   return {
-    status,
-    message,
+    code : status,
+    message: message || httpStatus[`${status}_MESSAGE`],
   };
 }
 

@@ -1,5 +1,6 @@
 v: 0
 app_name: "amvstrmAPI"
+icon: "./icon.png"
 micros:
   - name: amvstrmAPI
     src: .

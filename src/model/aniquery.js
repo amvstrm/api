@@ -26,6 +26,11 @@ export const SearchQ = () =>
           color
         }
         episodes
+        genres
+        tags {
+          id
+          name
+        }
         season
         format
         seasonYear
@@ -59,6 +64,10 @@ query Query {
     }
     bannerImage
     genres
+    tags {
+      id
+      name
+    }
     format
     status
     episodes
@@ -77,7 +86,6 @@ query Query {
       month
       day
     }
-    
     nextAiringEpisode {
       airingAt
       timeUntilAiring
@@ -126,12 +134,19 @@ query Query {
             color
           }
           bannerImage
+          genres
+          tags {
+            id
+            name
+          }
           type
           format
           status
           episodes
           duration
           averageScore
+          duration
+          season
         }
       }
     }
@@ -141,14 +156,153 @@ query Query {
 export const airingScheduleQuery = (
   page = 1,
   perPage = 20,
-  weekStart,
-  weekEnd,
-  notYetAired
+  start,
+  end,
+  notYetAired = false
 ) =>
   `query { 
     Page(
       page: ${page}, 
       perPage: ${perPage}) 
-      { pageInfo 
-        { total perPage currentPage lastPage hasNextPage } 
-        airingSchedules( notYetAired: ${notYetAired}, airingAt_greater: ${weekStart}, airingAt_lesser: ${weekEnd}) { airingAt episode media { id description idMal title { romaji english userPreferred native } countryOfOrigin description popularity bannerImage coverImage { extraLarge large medium color } genres averageScore seasonYear format } } } }`;
+      { 
+        pageInfo 
+        { 
+          total 
+          perPage 
+          currentPage 
+          lastPage 
+          hasNextPage 
+        } 
+        airingSchedules( notYetAired: ${notYetAired}, airingAt_greater: ${start}, airingAt_lesser: ${end}) 
+        { 
+          airingAt 
+          episode 
+          media 
+          { 
+            id 
+            description 
+            idMal 
+            title { romaji english userPreferred native } 
+            countryOfOrigin 
+            description 
+            popularity 
+            bannerImage 
+            coverImage 
+            { extraLarge large medium color } 
+            genres 
+            averageScore 
+            seasonYear 
+            format 
+          } 
+        } 
+      } 
+    }`;
+
+export const TrendingQuery = (page = 1, perPage = 20) => `
+query {
+  Page(page: ${page}, perPage: ${perPage}) {
+    pageInfo {
+      total
+      perPage
+      currentPage
+      lastPage
+      hasNextPage
+    }
+    media(type: ANIME, sort: [TRENDING_DESC, POPULARITY_DESC]) {
+      id
+      idMal
+      status(version: 2)
+      title {
+        userPreferred
+        romaji
+        english
+        native
+      }
+      genres
+      tags {
+        id
+        name
+      }
+      trailer {
+        id
+        site
+        thumbnail
+      }
+      description
+      format
+      bannerImage
+      coverImage {
+        extraLarge
+        large
+        medium
+        color
+      }
+      episodes
+      meanScore
+      duration
+      season
+      seasonYear
+      averageScore
+      nextAiringEpisode {
+        airingAt
+        timeUntilAiring
+        episode
+      }
+    }
+  }
+}`;
+
+export const PopularQuery = (page = 1, perPage = 20) =>
+  `
+  query { 
+    Page(page: ${page}, perPage: ${perPage}) { 
+      pageInfo { 
+        total 
+        perPage 
+        currentPage 
+        lastPage 
+        hasNextPage
+      } 
+      media(type: ANIME, sort: [POPULARITY_DESC]) { 
+        id
+        idMal
+        status(version: 2)
+        title {
+          userPreferred
+          romaji
+          english
+          native
+        }
+        genres
+        tags {
+          id
+          name
+        }
+        trailer {
+          id
+          site
+          thumbnail
+        }
+        description
+        format
+        bannerImage
+        coverImage {
+          extraLarge
+          large
+          medium
+          color
+        }
+        episodes
+        meanScore
+        duration
+        season
+        seasonYear
+        averageScore
+        nextAiringEpisode {
+          airingAt
+          timeUntilAiring
+          episode
+        }
+      } 
+    } 
+  }`;

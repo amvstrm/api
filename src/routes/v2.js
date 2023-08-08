@@ -1,17 +1,14 @@
 import { Router } from "express";
 import CryptoJS from "crypto-js";
-import { META, ANIME } from "@consumet/extensions";
+import { META } from "@consumet/extensions";
 
-import v1 from "../module/v1.js";
 import v2 from "../module/v2.js";
 import { extract } from "../utils/stream/gogo.js";
 import { get_stream } from "../utils/stream/zoro.js";
 
 import { successRes, errorRes } from "../model/res.js";
-import axios from "axios";
 
 const AnilistModule = new META.Anilist();
-const ZoroModule = new ANIME.Zoro();
 
 const router = Router();
 
@@ -236,7 +233,6 @@ router.get("/recommendations/:id", async (req, res, next) => {
       req.query.page,
       req.query.limit
     );
-
     res.status(200).json(successRes(200, "success", data));
   } catch (error) {
     next(error);
@@ -245,18 +241,10 @@ router.get("/recommendations/:id", async (req, res, next) => {
 
 router.get("/trending", async (req, res, next) => {
   try {
-    const data = await AnilistModule.fetchTrendingAnime(
-      req.query.p,
-      req.query.limit
-    );
+    const data = await v2.AniTrendingData(req.query.p, req.query.limit);
     res.status(200).json(
       successRes(200, "success", {
-        page: {
-          currentPage: data.currentPage,
-          totalPages: data.totalPages,
-          totalResults: data.totalResults,
-          hasNextPage: data.hasNextPage,
-        },
+        page: data.pageInfo,
         results: data.results,
       })
     );
@@ -267,18 +255,10 @@ router.get("/trending", async (req, res, next) => {
 
 router.get("/popular", async (req, res, next) => {
   try {
-    const data = await AnilistModule.fetchPopularAnime(
-      req.query.p,
-      req.query.limit
-    );
+    const data = await v2.AniPopularData(req.query.p, req.query.limit);
     res.status(200).json(
       successRes(200, "success", {
-        page: {
-          currentPage: data.currentPage,
-          totalPages: data.totalPages,
-          totalResults: data.totalResults,
-          hasNextPage: data.hasNextPage,
-        },
+        page: data.pageInfo,
         results: data.results,
       })
     );
@@ -354,107 +334,25 @@ router.get("/episode/:id", async (req, res, next) => {
   }
 });
 
-router.get("/genres", async (req, res, next) => {
+router.get("/random", async (req, res, next) => {
   try {
-    res.status(200).json({
-      genres: [
-        "Action",
-        "Adventure",
-        "Animation",
-        "Anime",
-        "Anime Influenced",
-        "Avant Garde",
-        "Award Winning",
-        "Boys Love",
-        "Cars",
-        "Children",
-        "Comedy",
-        "Cooking",
-        "Crime",
-        "Dementia",
-        "Demons",
-        "Documentary",
-        "Doujinshi",
-        "Drama",
-        "Ecchi",
-        "Erotica",
-        "Family",
-        "Fantasy",
-        "Food",
-        "Friendship",
-        "Game",
-        "Game Show",
-        "Gender Bender",
-        "Girls Love",
-        "Gore",
-        "Gourmet",
-        "Harem",
-        "Hentai",
-        "Historical",
-        "History",
-        "Home and Garden",
-        "Horror",
-        "Indie",
-        "Isekai",
-        "Josei",
-        "Kids",
-        "Law",
-        "Magic",
-        "Mahou Shoujo",
-        "Mahou Shounen",
-        "Martial Arts",
-        "Mature",
-        "Mecha",
-        "Medical",
-        "Military",
-        "Mini-Series",
-        "Music",
-        "Musical",
-        "Mystery",
-        "News",
-        "Parody",
-        "Police",
-        "Political",
-        "Psychological",
-        "Racing",
-        "Reality",
-        "Romance",
-        "Samurai",
-        "School",
-        "Sci-Fi",
-        "Science Fiction",
-        "Seinen",
-        "Shoujo",
-        "Shoujo Ai",
-        "Shounen",
-        "Shounen Ai",
-        "Slice Of Life",
-        "Slice of Life",
-        "Soap",
-        "Space",
-        "Sport",
-        "Sports",
-        "Super Power",
-        "Supernatural",
-        "Suspense",
-        "Talk Show",
-        "Thriller",
-        "Tragedy",
-        "Travel",
-        "Vampire",
-        "War",
-        "Western",
-        "Workplace",
-        "Yaoi",
-        "Youth",
-        "Yuri",
-        "Zombies",
-      ],
-    });
-  } catch (error) {
+    const generated_ammt = req.query.generated || 1;
+    const data = await v2.RandoAni(generated_ammt);
+    
+    if (generated_ammt > 40) {
+      return res.status(403).json(
+        errorRes(403)
+      )
+    }
+    
+    res.status(200).json(
+      successRes(200, "success", {
+        id: data,
+      })
+    );
+  } catch (err) {
     next(error);
   }
 });
-
 
 export default router;

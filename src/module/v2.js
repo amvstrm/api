@@ -8,7 +8,8 @@ import {
   InfoQuery,
   SearchQ,
   RecommendationsQuery,
-  airingScheduleQuery,
+  TrendingQuery,
+  PopularQuery,
 } from "../model/aniquery.js";
 
 const FetchAnilist = axios.create({
@@ -108,6 +109,7 @@ const AnimeInfo = async (id) => {
       coverImage: data.data.Media.coverImage,
       bannerImage: data.data.Media.bannerImage,
       genres: data.data.Media.genres,
+      tags: data.data.Media.tags,
       status: data.data.Media.status,
       format: data.data.Media.format,
       episodes: data.data.Media.episodes,
@@ -149,11 +151,10 @@ const AnimeSearch = async (query, page, limit) => {
         type: "ANIME",
       },
     });
-    const res = {
+    return {
       pageInfo: data.data.data.Page.pageInfo,
-      data: data.data.data.Page.media,
+      results: data.data.data.Page.media,
     };
-    return res;
   } catch (err) {
     if (err.response) {
       return {
@@ -174,7 +175,7 @@ const AnimeAdvancedSearch = async (req_data) => {
     });
     return {
       pageInfo: data.data.data.Page.pageInfo,
-      data: data.data.data.Page.media,
+      results: data.data.data.Page.media,
     };
   } catch (err) {
     if (err.response) {
@@ -321,15 +322,62 @@ const AniSkipData = async (id, ep_id) => {
 };
 
 const AniTrendingData = async (page, limit) => {
-  // NOT IMPLEMENTED
+  try {
+    const data = await FetchAnilist.post("", {
+      query: TrendingQuery(page, limit),
+    });
+    return {
+      pageInfo: data.data.data.Page.pageInfo,
+      results: data.data.data.Page.media,
+    };
+  } catch (err) {
+    if (err.response) {
+      return {
+        code: err.response.status,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
+      };
+    }
+    throw err;
+  }
 };
 
 const AniPopularData = async (page, limit) => {
-  // NOT IMPLEMENTED
+  try {
+    const data = await FetchAnilist.post("", {
+      query: PopularQuery(page, limit),
+    });
+    console.log(data);
+    return {
+      pageInfo: data.data.data.Page.pageInfo,
+      results: data.data.data.Page.media,
+    };
+  } catch (err) {
+    if (err.response) {
+      return {
+        code: err.response.status,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
+      };
+    }
+    throw err;
+  }
 };
 
-const AniGenresData = async (g_id, page, limit) => {
-  // NOT IMPLEMENTED
+const RandoAni = async (time = 1) => {
+  try {
+    const { data } = await axios.get(
+      "https://raw.githubusercontent.com/5H4D0WILA/IDFetch/main/ids.txt"
+    );
+    const ids = data.split("\n");
+    const result = [];
+
+    for (let i = 0; i < time; i++) {
+      const randomIndex = Math.floor(Math.random() * ids.length);
+      result.push(ids[randomIndex]);
+    }
+    return result
+  } catch (error) {
+    throw error;
+  }
 };
 
 export default {
@@ -339,4 +387,7 @@ export default {
   AnimeAdvancedSearch,
   AnimeAiringSchedule,
   AniSkipData,
+  AniTrendingData,
+  AniPopularData,
+  RandoAni,
 };

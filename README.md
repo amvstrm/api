@@ -10,7 +10,7 @@ _Our amvstr.ml domain is down for no reason, please use https://api-amvstrm.nyt9
   [Deploy guide](https://amvdocs.pages.dev/guide/backend)
 
 - Deta  
-  You can now install our app on deta.space with zero configuration. [Install Now](https://deta.space/discovery/r/zqqzs8tevp9iqg4y)
+  You can now install our app on deta.space with zero configuration. [Install Now](https://deta.space/discovery/r/xibypvztmuln878e)
 
 More info at our [DOCS](https://amvdocs.pages.dev/)
 

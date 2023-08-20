@@ -32,46 +32,36 @@ const FetchMalSyncData = async (malid) => {
 };
 
 const getIDeachProvider = async (json) => {
-  let idGogo = '""';
-  let idZoro = '""';
-  let id9anime = '""';
-  let idPahe = '""';
+  let idGogo = "";
+  let idGogoDub = "";
+  let idZoro = "";
+  let id9anime = "";
+  let idPahe = "";
 
-  if (json.data.Sites.Gogoanime) {
-    idGogo =
-      JSON.stringify(json.data.Sites.Gogoanime)
-        .match(/"identifier":"(.*?)"/)[1]
-        .match(/(.*)/)[0] || "";
-  }
-  if (json.data.Sites.Zoro) {
-    idZoro =
-      JSON.stringify(json.data.Sites.Zoro)
-        .match(/"url":"(.*?)"/)[1]
-        .match(/(.*)/)[0]
-        .replace("https://aniwatch.to/", "") || "";
-  }
-  if (json.data.Sites["9anime"]) {
-    id9anime = JSON.stringify(json.data.Sites["9anime"])
-      .match(/"url":"(.*?)"/)[1]
-      .match(/(.*)/)[0]
-      .replace(
-        JSON.stringify(json.data.Sites["9anime"]).includes(
-          "https://aniwave.to/watch/"
-        )
-          ? "https://aniwave.to/watch/"
-          : "https://9anime.pl/watch/",
-        "" || ""
-      );
-  }
-  if (json.data.Sites.animepahe) {
-    idPahe =
-      JSON.stringify(json.data.Sites.animepahe)
-        .match(/"identifier":"(.*?)"/)[1]
-        .match(/(.*)/)[0] || "";
+  for (const animePage in json.data.Sites) {
+    const animeInfo = json.data.Sites[animePage];
+    for (const animeId in animeInfo) {
+      const anime = animeInfo[animeId];
+      if (animePage === "Gogoanime") {
+        idGogo = anime.identifier.includes("dub") ? anime.identifier.replace('-dub', "") : anime.identifier; 
+        idGogoDub = anime.identifier === idGogo ? "" : anime.identifier;
+      } else if (animePage === "Zoro") {
+        idZoro = anime.url.includes("https://zoro.to/")
+          ? anime.url.replace("https://zoro.to/", "")
+          : anime.url.replace("https://aniwatch.to/", "");
+      } else if (animePage === "9anime") {
+        id9anime = anime.url.includes("https://aniwave.to/")
+          ? anime.url.replace("https://aniwave.to/watch/", "")
+          : anime.url.replace("https://9anime.to/watch/", "");
+      } else if (animePage === "animepahe") {
+        idPahe = anime.identifier;
+      }
+    }
   }
 
   return {
     idGogo,
+    idGogoDub,
     idZoro,
     id9anime,
     idPahe,
@@ -374,9 +364,194 @@ const RandoAni = async (time = 1) => {
       const randomIndex = Math.floor(Math.random() * ids.length);
       result.push(ids[randomIndex]);
     }
-    return result
+    return result;
   } catch (error) {
     throw error;
+  }
+};
+
+// Multistream & AniEpisodeList are still in development!
+
+// const AniRecent = async (page) => {
+//   try {
+//     const { data } = await axios.get(
+//       `https://api.anify.tv/recent?type=ANIME&page=${page}&apikey=${process.env.ANIFY_API_KEY}`
+//     );
+
+//     return data.map((item) => {
+//       const idGogo = () => {
+//         const gogoanimeMappings = item.mappings.filter(
+//           (mapping) => mapping.providerId === "gogoanime"
+//         );
+//         return gogoanimeMappings.length > 0
+//           ? gogoanimeMappings.map((mapping) =>
+//               mapping.id.replace("/category/", "")
+//             )[0]
+//           : null;
+//       };
+
+//       const id9anime = () => {
+//         const nineanimeMappings = item.mappings.filter(
+//           (mapping) => mapping.providerId === "9anime"
+//         );
+//         return nineanimeMappings.length > 0
+//           ? nineanimeMappings.map((mapping) =>
+//               mapping.id.replace("/watch/", "")
+//             )[0]
+//           : null;
+//       };
+
+//       const idZoro = () => {
+//         const zanimeMappings = item.mappings.filter(
+//           (mapping) => mapping.providerId === "zoro"
+//         );
+//         return zanimeMappings.length > 0
+//           ? zanimeMappings.map(
+//               (mapping) => mapping.id.split("/")[1].split("?")[0]
+//             )[0]
+//           : null;
+//       };
+
+//       const getcoverImg = item.artwork.filter(
+//         (item) =>
+//           item.providerId === "anilist" &&
+//           item.type === "poster" &&
+//           (item.img.includes("/medium/") || item.img.includes("/large/"))
+//       );
+
+//       const getbannerImg = item.artwork.filter(
+//         (item) => item.providerId === "anilist" && item.type === "banner"
+//       );
+
+//       return {
+//         id: item.id,
+//         title: item.title,
+//         id_provider: {
+//           idGogo: idGogo(),
+//           idZoro: idZoro(),
+//           id9anime: id9anime(),
+//         },
+//         coverImage: {
+//           large:
+//             getcoverImg.find((item) => item.img.includes("/large/"))?.img || "",
+//           medium:
+//             getcoverImg.find((item) => item.img.includes("/medium/"))?.img ||
+//             "",
+//           color: item.color,
+//         },
+//         bannerImage:
+//           getbannerImg.find((item) => item.img.includes("/banner/"))?.img || "",
+//         status: item.status,
+//         season: item.season,
+//         currentEpisode: item.currentEpisode,
+//         year: item.year,
+//         totalEpisodes: item.totalEpisodes,
+//         type: item.type,
+//         format: item.format,
+//         genres: item.genres,
+//         tags: item.tags,
+//       };
+//     });
+//   } catch (err) {
+//     if (err.response) {
+//       return {
+//         code: err.response.status,
+//         message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
+//       };
+//     }
+//     throw err;
+//   }
+// };
+
+const multiStream = async ({
+  apiKey,
+  providerId,
+  watchId,
+  episode,
+  id,
+  subType,
+  server,
+}) => {
+  try {
+    const { data } = await axios.post(
+      `https://api.anify.tv/sources?apikey=${
+        apiKey || process.env.ANIFY_API_KEY
+      }`,
+      {
+        providerId,
+        watchId,
+        episode,
+        id,
+        subType,
+        server,
+      }
+    );
+    return {
+      info: {
+        skiptime: {
+          intro: data.intro,
+          outro: data.outro,
+        },
+      },
+      stream: {
+        multi:
+          data.sources.find(
+            (item) => item.quality === "auto" || item.quality === "default"
+          ) ||
+          data.sources[0] ||
+          null,
+        backup: data.sources.find((item) => item.quality === "backup") || null,
+        track: data.subtitles.find((track) => track.lang === "Thumbnails"),
+        subtitles: data.subtitles.find((track) => track.lang !== "Thumbnails"),
+      },
+    };
+  } catch (err) {
+    if (err.response) {
+      return {
+        code: err.response.status,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
+      };
+    }
+    throw err;
+  }
+};
+
+const AniEpisodeList = async (id, provider = "gogoanime", apiKey) => {
+  try {
+    const { data } = await axios.get(
+      `https://api.anify.tv/episodes/${id}?apikey=${
+        (apiKey, process.env.ANIFY_API_KEY)
+      }`
+    );
+    const result = data.find((item) => item.providerId === provider);
+    if (result) {
+      const episodes = result.episodes.map((episode) => {
+        return {
+          id:
+            provider === "gogoanime"
+              ? episode.id.replace("/", "")
+              : provider === "zoro"
+              ? episode.id.replace("/watch/", "")
+              : episode.id,
+          episode: episode.number,
+          title: episode.title,
+          isFiller: episode.isFiller,
+          isDub: episode.hasDub,
+          image: episode.img,
+        };
+      });
+      return episodes;
+    }
+
+    return [];
+  } catch (err) {
+    if (err.response) {
+      return {
+        code: err.response.status,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
+      };
+    }
+    throw err;
   }
 };
 
@@ -390,4 +565,6 @@ export default {
   AniTrendingData,
   AniPopularData,
   RandoAni,
+  multiStream,
+  AniEpisodeList,
 };

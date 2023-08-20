@@ -23,4 +23,7 @@ micros:
         - name: SENTRY_DSN_URL
           description: Track and monitor your API with Sentry.io
           default: ''
+        - name: ANIFY_API_URL
+          description: Due to protection from the owner, you must get API key from anify.tv/discord
+          default: ''
 

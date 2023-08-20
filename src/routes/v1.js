@@ -62,7 +62,7 @@ router.get("/recentepisode/:type", async (req, res, next) => {
         typeq = 1;
         break;
     }
-    const data = await v1.recentReleaseEpisodesType(typeq);
+    const data = await v1.recentReleaseEpisodesType(req.query.p, typeq);
     if (data.error) {
       next(data.error);
     }

@@ -19,7 +19,7 @@ function base64encode(string) {
 }
 
 router.get("/stream/:id", async (req, res, next) => {
-  const { data_src, z_server } = req.query;
+  const { data_src } = req.query;
   const { id } = req.params;
   switch (data_src) {
     case "zoro":
@@ -46,6 +46,12 @@ router.get("/stream/:id", async (req, res, next) => {
             200,
             "zoro stream route still in beta, do not use it in your production",
             {
+              info: {
+                skipTime: {
+                  intro: data.meta.intro,
+                  outro: data.meta.outro,
+                },
+              },
               stream: {
                 multi: {
                   main: mainstrm,
@@ -53,10 +59,6 @@ router.get("/stream/:id", async (req, res, next) => {
                 },
                 tracks: data.meta.thumbnails,
                 subtitles: data.subtitles,
-              },
-              skipTime: {
-                intro: data.meta.intro,
-                outro: data.meta.outro,
               },
               iframe: "",
               plyr: {
@@ -194,6 +196,28 @@ router.get("/stream/:id", async (req, res, next) => {
   }
 });
 
+
+// IN DEVELOPMENT
+router.get("/stream/multi/:id", async (req, res, next) => {
+  const { apikey, data_src, episode, ani_id, isdub, server } = req.query;
+  const { id } = req.params;
+  try {
+    const data = await v2.multiStream({
+      apiKey: apikey,
+      providerId: data_src,
+      watchId: id,
+      episode: parseInt(episode),
+      id: parseInt(ani_id),
+      subType: isdub ? "dub": "sub",
+      server
+    });
+
+    res.status(200).json(successRes(200, data_src == "gogoanime" ? "not recommend" : "", data));
+  } catch (error) {
+    next(error)
+  }
+});
+
 router.get("/stream/skiptime/:id/:ep_id", async (req, res, next) => {
   try {
     const data = await v2.AniSkipData(req.params.id, req.params.ep_id);
@@ -267,6 +291,16 @@ router.get("/popular", async (req, res, next) => {
   }
 });
 
+// router.get("/recent", async (req, res, next) => {
+//   try {
+//     const data = await v2.AniRecent(1);
+//     res.json(data);
+//   } catch (error) {
+//     console.log(error);
+//     next(error);
+//   }
+// });
+
 router.get("/schedule", async (req, res, next) => {
   const { p = 1, limit, wstart, wend, shownotair = false } = req.query;
   const now = new Date();
@@ -325,10 +359,18 @@ router.get("/episode/:id", async (req, res, next) => {
   try {
     const data = await AnilistModule.fetchEpisodesListById(
       req.params.id,
-      req.query.dub,
-      true
     );
-    res.status(200).json(successRes(200, "success", { episode: data }));
+    res.status(200).json(successRes(200, "success", { episodes: data }));
+  } catch (error) {
+    next(error);
+  }
+});
+
+// IN DEVELOPMENT
+router.get("/episode/multi/:id", async (req, res, next) => {
+  try {
+    const data = await v2.AniEpisodeList(req.params.id, req.query.data_src);
+    res.status(200).json(successRes(200, "success", { episodes: data }));
   } catch (error) {
     next(error);
   }
@@ -338,13 +380,11 @@ router.get("/random", async (req, res, next) => {
   try {
     const generated_ammt = req.query.generated || 1;
     const data = await v2.RandoAni(generated_ammt);
-    
+
     if (generated_ammt > 40) {
-      return res.status(403).json(
-        errorRes(403)
-      )
+      return res.status(403).json(errorRes(403));
     }
-    
+
     res.status(200).json(
       successRes(200, "success", {
         id: data,

@@ -22,7 +22,7 @@ export const extract = async (id) => {
         "User-Agent": USER_AGENT,
       },
     });
-    datapg = datapage.data
+    datapg = datapage.data;
   } catch (error) {
     if (error.response) {
       return {
@@ -93,44 +93,6 @@ export const extract = async (id) => {
   };
 };
 
-export const addSources = async (source) => {
-  const sources = [];
-  if (source.file.includes("m3u8")) {
-    const m3u8Urls = await axios
-      .get(source.file, {
-        headers: {
-          Referer: referer,
-          "User-Agent": USER_AGENT,
-        },
-      })
-      .catch(() => null);
-
-    const videoList = m3u8Urls?.data.split("#EXT-X-I-FRAME-STREAM-INF:");
-    for (const video of videoList ?? []) {
-      if (!video.includes("m3u8")) continue;
-
-      const url = video
-        .split("\n")
-        .find((line) => line.includes("URI="))
-        .split("URI=")[1]
-        .replace(/"/g, "");
-
-      const quality = video.split("RESOLUTION=")[1].split(",")[0].split("x")[1];
-
-      sources.push({
-        url: url,
-        quality: `${quality}p`,
-        isM3U8: true,
-      });
-    }
-  }
-  sources.push({
-    url: source.file,
-    isM3U8: source.file.includes(".m3u8"),
-  });
-  return sources;
-};
-
 export const generateEncryptedAjaxParams = async ($, id) => {
   const encryptedKey = CryptoJS.AES.encrypt(id, keys.key, {
     iv: keys.iv,
@@ -154,7 +116,6 @@ export const decryptAjaxData = async (encryptedData) => {
 
 export default {
   extract,
-  addSources,
   generateEncryptedAjaxParams,
   decryptAjaxData,
 };

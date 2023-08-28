@@ -199,11 +199,14 @@ router.get("/stream/:id", async (req, res, next) => {
 
 // IN DEVELOPMENT
 router.get("/stream/multi/:id", async (req, res, next) => {
-  const { apikey, data_src, episode, ani_id, isdub, server } = req.query;
+  const { anify_api_key, data_src, episode, ani_id, isdub, server } = req.query;
   const { id } = req.params;
   try {
+    if (anify_api_key == "" || anify_api_key == undefined) {
+      return res.status(400).json(errorRes(400, "require Anify API KEY"));
+    }
     const data = await v2.multiStream({
-      apiKey: apikey,
+      apiKey: anify_api_key,
       providerId: data_src,
       watchId: id,
       episode: parseInt(episode),
@@ -369,7 +372,12 @@ router.get("/episode/:id", async (req, res, next) => {
 // IN DEVELOPMENT
 router.get("/episode/multi/:id", async (req, res, next) => {
   try {
-    const data = await v2.AniEpisodeList(req.params.id, req.query.data_src);
+    if (req.query.anify_api_key == "" || req.query.anify_api_key == undefined) {
+      return res.status(400).json(
+        errorRes(400, "require Anify API KEY")
+      )
+    }
+    const data = await v2.AniEpisodeList(req.params.id, req.query.data_src, req.query.anify_api_key);
     res.status(200).json(successRes(200, "success", { episodes: data }));
   } catch (error) {
     next(error);

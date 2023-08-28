@@ -43,8 +43,8 @@ const getIDeachProvider = async (json) => {
     for (const animeId in animeInfo) {
       const anime = animeInfo[animeId];
       if (animePage === "Gogoanime") {
-        idGogo = anime.identifier.includes("dub") ? anime.identifier.replace('-dub', "") : anime.identifier; 
-        idGogoDub = anime.identifier === idGogo ? "" : anime.identifier;
+        idGogo = Object.values(json.data.Sites[animePage])[0]?.identifier || "";
+        idGogoDub = Object.values(json.data.Sites[animePage])[1]?.identifier || "";
       } else if (animePage === "Zoro") {
         idZoro = anime.url.includes("https://zoro.to/")
           ? anime.url.replace("https://zoro.to/", "")
@@ -464,7 +464,7 @@ const RandoAni = async (time = 1) => {
 // };
 
 const multiStream = async ({
-  apiKey,
+  apiKey = process.env.ANIFY_API_KEY,
   providerId,
   watchId,
   episode,
@@ -474,9 +474,7 @@ const multiStream = async ({
 }) => {
   try {
     const { data } = await axios.post(
-      `https://api.anify.tv/sources?apikey=${
-        apiKey || process.env.ANIFY_API_KEY
-      }`,
+      `https://api.anify.tv/sources?apikey=${apiKey}`,
       {
         providerId,
         watchId,
@@ -516,12 +514,14 @@ const multiStream = async ({
   }
 };
 
-const AniEpisodeList = async (id, provider = "gogoanime", apiKey) => {
+const AniEpisodeList = async (
+  id,
+  provider = "gogoanime",
+  apiKey = process.env.ANIFY_API_KEY
+) => {
   try {
     const { data } = await axios.get(
-      `https://api.anify.tv/episodes/${id}?apikey=${
-        (apiKey, process.env.ANIFY_API_KEY)
-      }`
+      `https://api.anify.tv/episodes/${id}?apikey=${apiKey}`
     );
     const result = data.find((item) => item.providerId === provider);
     if (result) {

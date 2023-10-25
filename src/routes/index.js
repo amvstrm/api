@@ -1,6 +1,8 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
+import apicache from "apicache-plus";
+import Redis from "ioredis";
 
 import v1 from "./v1.js";
 import v2 from "./v2.js";
@@ -8,13 +10,13 @@ import v2 from "./v2.js";
 dotenv.config();
 const router = Router();
 
-const allowlist = process.env.ALLOWLIST.split(',') || ''
+const allowlist = process.env.ALLOWLIST.split(",") || "";
 const limiter = rateLimit({
   windowMs: 60000,
   max: (req, res) => {
     if (!allowlist.includes(req.headers.origin || req.headers.host))
-      return parseInt(process.env.RATE_LIMIT) || 300;
-    else return 0;
+      return parseInt(process.env.RATE_LIMIT) || 200;
+    return 0;
   },
   standardHeaders: false,
   legacyHeaders: true,
@@ -29,6 +31,28 @@ const limiter = rateLimit({
   },
 });
 
+let cache;
+
+if (process.env.USE_REDIS == "true") {
+  cache = apicache.options({
+    redisClient: !process.env.REDIS_URL.includes("redis://") ? false : new Redis(process.env.REDIS_URL),
+    statusCodes: {
+      exclude: [404, 403, 500, 401],
+      include: [200, 304, 300, 301],
+    },
+    defaultDuration: "1 hour",
+  }).middleware;
+} else if (process.env.USE_REDIS == "false" || process.env.USE_REDIS == "") {
+  cache = apicache.options({
+    statusCodes: {
+      exclude: [404, 403, 500, 401],
+      include: [200, 304, 300, 301],
+    },
+    defaultDuration: "1 hour",
+  }).middleware;
+}
+
+router.use("/", cache("30 minutes"))
 router.use("/", limiter);
 router.use("/v1", v1);
 router.use("/v2", v2);

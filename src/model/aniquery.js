@@ -102,6 +102,39 @@ query Query {
         name
       }
     }
+    relations {
+      edges {
+        node {
+          id
+          idMal
+          title {
+            romaji
+            english
+            native
+            userPreferred
+          }
+          coverImage {
+            large
+            medium
+            color
+          }
+          bannerImage
+          genres
+          tags {
+            id
+            name
+          }
+          type
+          format
+          status
+          episodes
+          duration
+          averageScore
+          duration
+          season
+        }
+      }
+    }
   }
 }
 `;

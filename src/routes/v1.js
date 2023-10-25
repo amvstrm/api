@@ -1,5 +1,4 @@
 import { Router } from "express";
-
 import v1 from "../module/v1.js";
 
 const router = Router();
@@ -10,7 +9,7 @@ router.get("/info/:id", async (req, res, next) => {
     if (data.error) {
       next(data.error);
     } else {
-      res.status(200).json({code: 200, message: '', ...data});
+      res.status(200).json({ code: 200, message: "", ...data });
     }
   } catch (error) {
     next(error);
@@ -24,7 +23,7 @@ router.get("/search", async (req, res, next) => {
     if (data.error) {
       next(data.error);
     }
-    res.status(200).json({code: 200, message: '', results: data});
+    res.status(200).json({ code: 200, message: "", results: data });
   } catch (error) {
     next(error);
   }
@@ -37,7 +36,7 @@ router.get("/episode/:id", async (req, res, next) => {
     if (data.error) {
       next(data.error);
     }
-    res.status(200).json({code: 200, message: '', ...data});
+    res.status(200).json({ code: 200, message: "", ...data });
   } catch (error) {
     next(error);
   }
@@ -46,27 +45,15 @@ router.get("/episode/:id", async (req, res, next) => {
 // Route to get recent episodes of a specific type
 router.get("/recentepisode/:type", async (req, res, next) => {
   try {
-    const { type } = req.params;
-    let typeq;
-    switch (typeq) {
-      case type === "all":
-        typeq = 1;
-        break;
-      case "dub":
-        typeq = 2;
-        break;
-      case "cn":
-        typeq = 3;
-        break;
-      default:
-        typeq = 1;
-        break;
-    }
-    const data = await v1.recentReleaseEpisodesType(req.query.p, typeq);
+    const type = req.params.type;
+    const data = await v1.recentReleaseEpisodesType(
+      req.query.p,
+      type == "all" ? 1 : type == "dub" ? 2 : type == "cn" ? 3 : 1
+    );
     if (data.error) {
       next(data.error);
     }
-    res.status(200).json({code: 200, message: '', results: data});
+    res.status(200).json({ code: 200, message: "", results: data });
   } catch (error) {
     next(error);
   }
@@ -79,7 +66,7 @@ router.get("/topair", async (req, res, next) => {
     if (data.error) {
       next(data.error);
     }
-    res.status(200).json({code: 200, message: '', results: data});
+    res.status(200).json({ code: 200, message: "", results: data });
   } catch (error) {
     next(error);
   }
@@ -92,7 +79,7 @@ router.get("/stream/:id", async (req, res, next) => {
     if (data.error) {
       next(data.error);
     }
-    res.status(200).json({code: 200, message: '', ...data});
+    res.status(200).json({ code: 200, message: "", ...data });
   } catch (error) {
     next(error);
   }
@@ -151,7 +138,7 @@ router.get("/genres", async (req, res, next) => {
         "yaoi",
         "yuri",
         "isekai",
-      ]
+      ],
     });
   } catch (error) {
     next(error);
@@ -161,11 +148,11 @@ router.get("/genres", async (req, res, next) => {
 // Route to get genres for a specific ID
 router.get("/genres/:id", async (req, res, next) => {
   try {
-    const data = await v1.genres(req.params.id, req.query.p || 1)
+    const data = await v1.genres(req.params.id, req.query.p || 1);
     if (data.error) {
       next(data.error);
     }
-    res.status(200).json({code: 200, message: '', results: data});
+    res.status(200).json({ code: 200, message: "", results: data });
   } catch (error) {
     next(error);
   }
@@ -179,7 +166,7 @@ router.get("/season/:season/:year", async (req, res, next) => {
     if (data.error) {
       next(data.error);
     }
-    res.status(200).json({code: 200, message: '', results: data});
+    res.status(200).json({ code: 200, message: "", results: data });
   } catch (error) {
     next(error);
   }
@@ -193,7 +180,7 @@ router.get("/movies/:page", async (req, res, next) => {
     if (data.error) {
       next(data.error);
     }
-    res.status(200).json({code: 200, message: '', results: data});
+    res.status(200).json({ code: 200, message: "", results: data });
   } catch (error) {
     next(error);
   }
@@ -207,7 +194,7 @@ router.get("/popular/:page", async (req, res, next) => {
     if (data.error) {
       next(data.error);
     }
-    res.status(200).json({code: 200, message: '', results: data});
+    res.status(200).json({ code: 200, message: "", results: data });
   } catch (error) {
     next(error);
   }
@@ -220,12 +207,10 @@ router.get("/download/:id", async (req, res, next) => {
     if (req.query.redirect === "true") {
       return res.redirect(data.download);
     }
-    res.json(data)
+    res.json(data);
   } catch (error) {
     next(error);
   }
 });
-
-
 
 export default router;

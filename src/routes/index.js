@@ -31,26 +31,9 @@ const limiter = rateLimit({
   },
 });
 
-let cache;
-
-if (process.env.USE_REDIS == "true") {
-  cache = apicache.options({
-    redisClient: !process.env.REDIS_URL.includes("redis://") ? false : new Redis(process.env.REDIS_URL),
-    statusCodes: {
-      exclude: [404, 403, 500, 401],
-      include: [200, 304, 300, 301],
-    },
+let cache = apicache.options({
     defaultDuration: "1 hour",
   }).middleware;
-} else if (process.env.USE_REDIS == "false" || process.env.USE_REDIS == "") {
-  cache = apicache.options({
-    statusCodes: {
-      exclude: [404, 403, 500, 401],
-      include: [200, 304, 300, 301],
-    },
-    defaultDuration: "1 hour",
-  }).middleware;
-}
 
 router.use("/", cache("30 minutes"))
 router.use("/", limiter);

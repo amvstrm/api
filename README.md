@@ -1,18 +1,18 @@
 # amvstrm's API
 
-amvstrm's API that powered [amvstr.ml](https://amvstr.ml)
+amvstrm's API that powered [amvstrm](https://amvstr.me)
 
-_Our amvstr.ml domain is down for no reason, please use https://api-amvstrm.nyt92.eu.org/ instead._
+_You can now use our official API url here : https://api.amvstr.me_
 
 ## Deploy
 
 - Vercel, Railway, Docker, and other provider  
-  [Deploy guide](https://amvdocs.pages.dev/guide/backend)
+  [Deploy guide](https://docs.amvstr.me/guide/backend)
 
 - Deta  
   You can now install our app on deta.space with zero configuration. [Install Now](https://deta.space/discovery/r/xibypvztmuln878e)
 
-More info at our [DOCS](https://amvdocs.pages.dev/)
+More info at our [DOCS](https://docs.amvstr.me)
 
 ## Features
 
@@ -29,7 +29,7 @@ More info at our [DOCS](https://amvdocs.pages.dev/)
 
 ## Documentation
 
-You can check out our new [API Docs](https://amvdocs.pages.dev/api/introduction#routes) with all available routes with information.  
+You can check out our new [API Docs](https://docs.amvstr.me/api/introduction#routes) with all available routes with information.  
 
 ## Credit
 
@@ -44,4 +44,4 @@ We are using these to power our API...
 
 ## License
 
-Our API source code is distributed under the terms of the GPL v3.0 license. See [LICENSE](https://docs.amvstr.ml/license) for details.
+Our API source code is distributed under the terms of the GPL v3.0 license. See [LICENSE](https://docs.amvstr.me/license) for details.

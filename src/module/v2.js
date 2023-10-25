@@ -21,7 +21,7 @@ const FetchAnilist = axios.create({
 });
 
 const FetchMalSyncData = async (malid) => {
-  const data = axios
+  const data = await axios
     .get(
       `https://raw.githubusercontent.com/bal-mackup/mal-backup/master/anilist/anime/${malid}.json`
     )
@@ -44,7 +44,8 @@ const getIDeachProvider = async (json) => {
       const anime = animeInfo[animeId];
       if (animePage === "Gogoanime") {
         idGogo = Object.values(json.data.Sites[animePage])[0]?.identifier || "";
-        idGogoDub = Object.values(json.data.Sites[animePage])[1]?.identifier || "";
+        idGogoDub =
+          Object.values(json.data.Sites[animePage])[1]?.identifier || "";
       } else if (animePage === "Zoro") {
         idZoro = anime.url.includes("https://zoro.to/")
           ? anime.url.replace("https://zoro.to/", "")
@@ -89,6 +90,10 @@ const AnimeInfo = async (id) => {
       }
     }
 
+    const relations = data.data.Media.relations.edges.map((node) => {
+      return node.node;
+    });
+
     return {
       id: data.data.Media.id,
       idMal: data.data.Media.idMal,
@@ -117,6 +122,7 @@ const AnimeInfo = async (id) => {
       siteUrl: data.data.Media.siteUrl,
       trailer: data.data.Media.trailer,
       studios: data.data.Media.studios.nodes,
+      relation: relations,
     };
   } catch (err) {
     if (err.response) {
@@ -178,7 +184,7 @@ const AnimeAdvancedSearch = async (req_data) => {
   }
 };
 
-const AnimeRecommendations = async (id, page = 1, limit = 12) => {
+const SimilarAnime = async (id, page = 1, limit = 12) => {
   const query = RecommendationsQuery(id, page, limit);
   try {
     const Recndtdata = await FetchAnilist.post("", {
@@ -204,30 +210,30 @@ const AnimeRecommendations = async (id, page = 1, limit = 12) => {
         message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
       };
     }
-    console.log(err);
     throw err;
   }
 };
 
-const AnimeAiringSchedule = async ({
-  page = 1,
-  perPage = 12,
-  w_start,
-  w_end,
-  notYetAired,
-}) => {
+const AnimeAiringSchedule = async ({ page = 1, perPage = 12 }) => {
   try {
+    const currentDate = new Date();
+
+    const weekStart = new Date(currentDate);
+    weekStart.setDate(currentDate.getDate() - currentDate.getDay() + 1);
+
+    const weekEnd = new Date(currentDate);
+    weekEnd.setDate(currentDate.getDate() - currentDate.getDay() + 8);
+
     const query = `
-      {
+      query {
         Page(page: ${page}, perPage: ${perPage}) {
           pageInfo {
-            total
-            perPage
-            currentPage
-            lastPage
             hasNextPage
+            total
           }
-          airingSchedules(notYetAired: ${notYetAired}, airingAt_greater: ${w_start}, airingAt_lesser: ${w_end}) {
+          airingSchedules(airingAt_greater: ${Math.round(
+            weekStart.getTime() / 1000
+          )}, airingAt_lesser: ${Math.round(weekEnd.getTime() / 1000)}) {
             airingAt
             episode
             media {
@@ -250,6 +256,12 @@ const AnimeAiringSchedule = async ({
                 medium
                 color
               }
+              episodes
+              nextAiringEpisode {
+                airingAt
+                timeUntilAiring
+                episode
+              }
               genres
               averageScore
               seasonYear
@@ -262,19 +274,16 @@ const AnimeAiringSchedule = async ({
     const data = await axios.post("https://graphql.anilist.co", {
       query,
     });
-    const res = {
+    return {
       pageInfo: data.data.data.Page.pageInfo,
       results: data.data.data.Page.airingSchedules.map((item) => ({
         id: item.media.id.toString(),
         malId: item.media.idMal,
         episode: item.episode,
         airingAt: item.airingAt,
-        title: {
-          romaji: item.media.title.romaji,
-          english: item.media.title.english,
-          native: item.media.title.native,
-          userPreferred: item.media.title.userPreferred,
-        },
+        title: item.media.title,
+        episodes: item.media.episodes,
+        nextair: item.media.nextAiringEpisode,
         country: item.media.countryOfOrigin,
         coverImage: item.media.coverImage,
         description: item.media.description,
@@ -286,9 +295,14 @@ const AnimeAiringSchedule = async ({
         type: item.media.format,
       })),
     };
-    return res;
   } catch (err) {
-    throw new Error(err.message);
+    if (err.response) {
+      return {
+        code: err.response.status,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
+      };
+    }
+    throw err;
   }
 };
 
@@ -375,7 +389,7 @@ const RandoAni = async (time = 1) => {
 // const AniRecent = async (page) => {
 //   try {
 //     const { data } = await axios.get(
-//       `https://api.anify.tv/recent?type=ANIME&page=${page}&apikey=${process.env.ANIFY_API_KEY}`
+//       `https://api.anify.tv/schedule?type=anime`
 //     );
 
 //     return data.map((item) => {
@@ -464,26 +478,22 @@ const RandoAni = async (time = 1) => {
 // };
 
 const multiStream = async ({
-  apiKey = process.env.ANIFY_API_KEY,
-  providerId,
-  watchId,
-  episode,
   id,
+  data_src,
+  episode,
+  ani_id,
   subType,
   server,
 }) => {
   try {
-    const { data } = await axios.post(
-      `https://api.anify.tv/sources?apikey=${apiKey}`,
-      {
-        providerId,
-        watchId,
-        episode,
-        id,
-        subType,
-        server,
-      }
-    );
+    const { data } = await axios.post(`https://api.anify.tv/sources`, {
+      providerId: data_src,
+      watchId: data_src === "zoro" ? `/watch/${id}` : id,
+      episodeNumber: episode,
+      id: ani_id,
+      subType: subType || "sub",
+      server,
+    });
     return {
       info: {
         skiptime: {
@@ -498,10 +508,15 @@ const multiStream = async ({
           ) ||
           data.sources[0] ||
           null,
-        backup: data.sources.find((item) => item.quality === "backup") || null,
-        track: data.subtitles.find((track) => track.lang === "Thumbnails"),
-        subtitles: data.subtitles.find((track) => track.lang !== "Thumbnails"),
+        backup:
+          data.sources.find((item) => item.quality === "backup") ||
+          data.sources.find((item) => item.quality === "1080p") ||
+          data.sources.find((item) => item.quality === "720p") ||
+          null,
+        track: data.subtitles.find((track) => track.lang === "Thumbnails") || {},
+        subtitles: data.subtitles.filter((track) => track.lang !== "Thumbnails") || [],
       },
+      headers: data.headers
     };
   } catch (err) {
     if (err.response) {
@@ -514,15 +529,32 @@ const multiStream = async ({
   }
 };
 
-const AniEpisodeList = async (
-  id,
-  provider = "gogoanime",
-  apiKey = process.env.ANIFY_API_KEY
-) => {
+const AniEpisodeList = async (id, provider = "gogoanime") => {
   try {
-    const { data } = await axios.get(
-      `https://api.anify.tv/episodes/${id}?apikey=${apiKey}`
-    );
+    const { data } = await axios.get(`https://api.anify.tv/episodes/${id}`);
+    if (provider === "all") {
+      const transformedData = data.map((provider) => {
+        const episodes = provider.episodes.map((episode) => ({
+          id:
+            provider.providerId === "gogoanime"
+              ? episode.id.replace("/", "")
+              : provider.providerId === "zoro"
+              ? episode.id.replace("/watch/", "")
+              : episode.id,
+          episode: episode.number,
+          title: episode.title,
+          isFiller: episode.isFiller,
+          isDub: episode.hasDub,
+          image: episode.img,
+        }));
+
+        return {
+          providerId: provider.providerId,
+          episodes: episodes,
+        };
+      });
+      return transformedData;
+    }
     const result = data.find((item) => item.providerId === provider);
     if (result) {
       const episodes = result.episodes.map((episode) => {
@@ -540,10 +572,11 @@ const AniEpisodeList = async (
           image: episode.img,
         };
       });
-      return episodes;
+      return {
+        providerId: result.providerId,
+        episodes,
+      };
     }
-
-    return [];
   } catch (err) {
     if (err.response) {
       return {
@@ -558,7 +591,7 @@ const AniEpisodeList = async (
 export default {
   AnimeInfo,
   AnimeSearch,
-  AnimeRecommendations,
+  SimilarAnime,
   AnimeAdvancedSearch,
   AnimeAiringSchedule,
   AniSkipData,

@@ -1,4 +1,4 @@
-import express, { json } from "express";
+import express, { json, urlencoded } from "express";
 import morgan from "morgan";
 import helmet from "helmet";
 import cors from "cors";
@@ -22,11 +22,14 @@ app.use(
           process.env.ALLOWLIST === "" ||
           process.env.ALLOWLIST === "*"
           ? "*"
-          : process.env.ALLOWLIST.split(",")
+          : process.env.ALLOWLIST?.split(",")
         : "*",
   })
 );
 app.use(json());
+app.use(urlencoded({ extended: true }));
+
+app.set("trust proxy", 1);
 
 Sentry.init({
   environment: process.env.NODE_ENV,
@@ -38,6 +41,7 @@ Sentry.init({
   ],
   tracesSampleRate: 0,
 });
+
 
 app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());

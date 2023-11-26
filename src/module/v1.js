@@ -8,7 +8,7 @@ import { load } from "cheerio";
 import { extract } from "../utils/stream/gogo.js";
 import httpStatus from "http-status";
 
-const BASE_URL = "https://gogoanimehd.to/";
+const BASE_URL = "https://anitaku.to/";
 const ajax_url = "https://ajax.gogo-load.com/";
 const popular_ongoing_url = `${ajax_url}ajax/page-recent-release-ongoing.html`;
 const recent_release_url = `${ajax_url}ajax/page-recent-release.html`;

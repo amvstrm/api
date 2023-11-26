@@ -226,8 +226,8 @@ router.post("/search", async (req, res, next) => {
 
 router.get("/episode/:id", async (req, res, next) => {
   try {
-    const data = await AnilistModule.fetchEpisodesListById(req.params.id);
-    res.status(200).json(successRes(200, "success", { episodes: data }));
+    const data = await AnilistModule.fetchAnimeInfo(req.params.id);
+    res.status(200).json(successRes(200, "success", { episodes: data.episodes }));
   } catch (error) {
     next(error);
   }

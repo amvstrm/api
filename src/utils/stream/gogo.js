@@ -4,7 +4,7 @@ import axios from "axios";
 import { load } from "cheerio";
 import CryptoJS from "crypto-js";
 
-const BASE_URL = "https://gogoanimehd.to/";
+const BASE_URL = "https://anitaku.to/";
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36";
 const keys = {

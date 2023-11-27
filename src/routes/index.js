@@ -43,7 +43,7 @@ const cache = apicache.options({
 }).middleware;
 
 router.use("/", cache("30 minutes"), (req, res, next) => {
-  res.setHeader("x-amv-cache", ifHit ? "MISS" : "HIT");
+  res.setHeader("x-amv-cache", ifHit ? "HIT" : "MISS");
   next();
 });
 router.use("/", limiter);

@@ -40,6 +40,7 @@ Sentry.init({
     ...Sentry.autoDiscoverNodePerformanceMonitoringIntegrations(),
   ],
   tracesSampleRate: 0,
+  sampleRate: 45,
 });
 
 

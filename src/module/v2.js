@@ -1,6 +1,7 @@
 import axios from "axios";
 import httpStatus from "http-status";
 import dotenv from "dotenv";
+import { ANIME } from "@consumet/extensions";
 
 dotenv.config();
 
@@ -11,6 +12,12 @@ import {
   TrendingQuery,
   PopularQuery,
 } from "../model/aniquery.js";
+
+import v1 from "./v1.js";
+const Gogo = new ANIME.Gogoanime();
+const Zoro = new ANIME.Zoro();
+const NineAnime = new ANIME.NineAnime();
+const AnimePahe = new ANIME.AnimePahe();
 
 const FetchAnilist = axios.create({
   baseURL: "https://graphql.anilist.co",
@@ -513,10 +520,12 @@ const multiStream = async ({
           data.sources.find((item) => item.quality === "1080p") ||
           data.sources.find((item) => item.quality === "720p") ||
           null,
-        track: data.subtitles.find((track) => track.lang === "Thumbnails") || {},
-        subtitles: data.subtitles.filter((track) => track.lang !== "Thumbnails") || [],
+        track:
+          data.subtitles.find((track) => track.lang === "Thumbnails") || {},
+        subtitles:
+          data.subtitles.filter((track) => track.lang !== "Thumbnails") || [],
       },
-      headers: data.headers
+      headers: data.headers,
     };
   } catch (err) {
     if (err.response) {
@@ -533,8 +542,9 @@ const AniEpisodeList = async (id, provider = "gogoanime") => {
   try {
     const { data } = await axios.get(`https://api.anify.tv/episodes/${id}`);
     if (provider === "all") {
-      const transformedData = data.map((provider) => {
-        const episodes = provider.episodes.map((episode) => ({
+      const transformedData = [];
+      for (const provider of data) {
+        const episodes = Array.from(provider.episodes, (episode) => ({
           id:
             provider.providerId === "gogoanime"
               ? episode.id.replace("/", "")
@@ -548,30 +558,28 @@ const AniEpisodeList = async (id, provider = "gogoanime") => {
           image: episode.img,
         }));
 
-        return {
+        transformedData.push({
           providerId: provider.providerId,
           episodes: episodes,
-        };
-      });
+        });
+      }
       return transformedData;
     }
     const result = data.find((item) => item.providerId === provider);
     if (result) {
-      const episodes = result.episodes.map((episode) => {
-        return {
-          id:
-            provider === "gogoanime"
-              ? episode.id.replace("/", "")
-              : provider === "zoro"
-              ? episode.id.replace("/watch/", "")
-              : episode.id,
-          episode: episode.number,
-          title: episode.title,
-          isFiller: episode.isFiller,
-          isDub: episode.hasDub,
-          image: episode.img,
-        };
-      });
+      const episodes = Array.from(result.episodes, (episode) => ({
+        id:
+          provider === "gogoanime"
+            ? episode.id.replace("/", "")
+            : provider === "zoro"
+            ? episode.id.replace("/watch/", "")
+            : episode.id,
+        episode: episode.number,
+        title: episode.title,
+        isFiller: episode.isFiller,
+        isDub: episode.hasDub,
+        image: episode.img,
+      }));
       return {
         providerId: result.providerId,
         episodes,
@@ -588,6 +596,24 @@ const AniEpisodeList = async (id, provider = "gogoanime") => {
   }
 };
 
+const AniEpisodeMapper = async (id, provider = "gogoanime", dub) => {
+  const json = await FetchMalSyncData(id);
+  const getID = await getIDeachProvider(json);
+  let data;
+
+  if (provider == "gogoanime") {
+    data = (await Gogo.fetchAnimeInfo(getID.idGogo)).episodes;
+  } else if (provider == "zoro" || provider == "aniwatch") {
+    data = (await Zoro.fetchAnimeInfo(getID.idZoro)).episodes;
+  } else if (provider == "aniwave" || provider == "9anime") {
+    data = (await NineAnime.fetchAnimeInfo(getID.id9anime)).episodes;
+  } else if (provider == "animepahe") {
+    data = (await AnimePahe.fetchAnimeInfo(getID.idPahe)).episodes;
+  }
+
+  return data;
+};
+
 export default {
   AnimeInfo,
   AnimeSearch,
@@ -600,4 +626,5 @@ export default {
   RandoAni,
   multiStream,
   AniEpisodeList,
+  AniEpisodeMapper,
 };

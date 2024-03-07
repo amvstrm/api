@@ -36,14 +36,15 @@ let ifHit = false;
 const cache = apicache.options({
   afterHit: () => {
     console.log(ifHit);
-    ifHit = true
-    return true
+    ifHit = true;
+    return true;
   },
   defaultDuration: "1 hour",
 }).middleware;
 
 router.use("/", cache("30 minutes"), (req, res, next) => {
   res.setHeader("x-amv-cache", ifHit ? "HIT" : "MISS");
+  
   next();
 });
 router.use("/", limiter);

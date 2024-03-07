@@ -9,7 +9,7 @@ import { extract } from "../utils/stream/gogo.js";
 import httpStatus from "http-status";
 
 const BASE_URL = "https://anitaku.to/";
-const ajax_url = "https://ajax.gogo-load.com/";
+const ajax_url = "https://ajax.gogocdn.net/";
 const popular_ongoing_url = `${ajax_url}ajax/page-recent-release-ongoing.html`;
 const recent_release_url = `${ajax_url}ajax/page-recent-release.html`;
 const list_episodes_url = `${ajax_url}ajax/load-list-episode`;

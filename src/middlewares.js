@@ -6,8 +6,6 @@ export function notFound(req, res, next) {
   next(error);
 }
 
-// handle error with http-status 
-
 export function errorHandler(err, req, res, next) {
   console.error(err.message);
   res.status(err.code || 500);
@@ -15,6 +13,8 @@ export function errorHandler(err, req, res, next) {
     code: err.code || 500,
     message: err.message || httpStatus['500_MESSAGE']
   })
+
+  next();
 }
 
 export default {

@@ -5,8 +5,8 @@
 import axios from "axios";
 import { load } from "cheerio";
 
-import { extract } from "../utils/stream/gogo.js";
 import httpStatus from "http-status";
+import { extract } from "../utils/stream/gogo.js";
 
 const BASE_URL = "https://anitaku.to/";
 const ajax_url = "https://ajax.gogocdn.net/";
@@ -354,6 +354,7 @@ const recentReleaseEpisodesType = async (page, type) => {
           .attr("href")
           .split("/")[1]
           .split("-episode-")[0],
+        // eslint-disable-next-line newline-per-chained-call
         episode: $(el).find("p.episode").text().replace("Episode ", "").trim(),
         episode_id: $(el).find("p.name > a").attr("href").split("/")[1],
         subOrdub: $(el)

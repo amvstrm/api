@@ -1,4 +1,6 @@
+/* eslint-disable no-tabs */
 import { Router } from "express";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import CryptoJS from "crypto-js";
 import { ANIME, META } from "@consumet/extensions";
 import axios from "axios";
@@ -20,25 +22,25 @@ function base64encode(string) {
 }
 
 // IN DEVELOPMENT
-router.get("/stream/multi", async (req, res, next) => {
-  const { id, data_src, episode, ani_id, subType, server } = req.query;
+router.get("/stream/multi", async (req, res) => {
+  const { providerId, watchId, episodeNumber, id, subType, server } = req.query;
   try {
-    const data = await AnifyModule.fetchEpisodeSources(id, episode, ani_id);
-    // const { data } = await axios.post(`https://api.anify.tv/sources`, {
-    //   providerId: data_src,
-    //   watchId: data_src === "zoro" ? `/watch/${id}` : id,
-    //   episodeNumber: episode,
-    //   id: ani_id,
-    //   subType,
-    //   server,
-    // });
-    res
-      .status(200)
-      .json(
-        successRes(200, data_src == "gogoanime" ? "not recommend" : "", data)
-      );
-  } catch (error) {
-    next(error);
+    const data = await v2.multiStream({
+      providerId,
+      watchId,
+      episodeNumber,
+      id,
+      subType,
+      server,
+    });
+    res.status(200).json(successRes(200, "", data));
+  } catch (err) {
+    if (err.response) {
+      return res
+        .status(err.response.status)
+        .json(errorRes(err.response.status, err.message));
+    }
+    throw err;
   }
 });
 
@@ -47,18 +49,25 @@ router.get("/stream/:id", async (req, res, next) => {
 
   try {
     const data = await extract(id);
-    if (data.code == 404) {
+
+    if (data.code === 404) {
       return res.status(404).json(errorRes(404));
     }
 
     const mainstrm =
-      data.sources.find((item) => item.quality === "default") ||
-      data.sources[0].url ||
-      null;
+      data.sources === null
+        ? null
+        : data.sources.find((item) => item.quality === "default") ||
+          data.sources[0].url ||
+          null;
     const bkstrm =
-      data.sources.find((item) => item.quality === "backup") || null;
+      data.sources === null
+        ? null
+        : data.sources.find((item) => item.quality === "backup") || null;
 
-    const dtatrack = !data.tracks ? "" : data.tracks[0];
+    const dtatrack =
+      // eslint-disable-next-line no-nested-ternary
+      data.sources === null ? null : !data.tracks ? "" : data.tracks[0];
 
     res.status(200).json(
       successRes(200, "success", {
@@ -71,18 +80,28 @@ router.get("/stream/:id", async (req, res, next) => {
           tracks: dtatrack,
         },
         iframe: data.iframe,
-        plyr: {
-          main: `https://plyr.link/p/player.html#${base64encode(mainstrm.url)}`,
-          backup: `https://plyr.link/p/player.html#${base64encode(bkstrm.url)}`,
-        },
-        nspl: {
-          main: `https://nspl.nyt92.eu.org/player?p=${base64encode(
-            `&title=${id}&file=${mainstrm.url}&thumbnails=${dtatrack.file}`
-          )}`,
-          backup: `https://nspl.nyt92.eu.org/player?p=${base64encode(
-            `&title=${id}&file=${bkstrm.url}&thumbnails=${dtatrack.file}`
-          )}`,
-        },
+        plyr:
+          data.sources === null
+            ? null
+            : {
+                main: `https://plyr.link/p/player.html#${base64encode(
+                  mainstrm.url
+                )}`,
+                backup: `https://plyr.link/p/player.html#${base64encode(
+                  bkstrm.url
+                )}`,
+              },
+        nspl:
+          data.sources === null
+            ? null
+            : {
+                main: `https://nspl.nyt92.eu.org/player?p=${base64encode(
+                  `&title=${id}&file=${mainstrm.url}&thumbnails=${dtatrack.file}`
+                )}`,
+                backup: `https://nspl.nyt92.eu.org/player?p=${base64encode(
+                  `&title=${id}&file=${bkstrm.url}&thumbnails=${dtatrack.file}`
+                )}`,
+              } || null,
       })
     );
   } catch (error) {
@@ -100,8 +119,8 @@ router.get("/stream/skiptime/:id/:ep_id", async (req, res, next) => {
       successRes(200, "success", {
         found: data.found,
         results: {
-          op: data.results?.find((item) => item.skipType === "op") || null,
-          ed: data.results?.find((item) => item.skipType === "ed") || null,
+          op: data.results.find((item) => item.skipType === "op") || null,
+          ed: data.results.find((item) => item.skipType === "ed") || null,
         },
       })
     );
@@ -281,9 +300,9 @@ router.get("/season/:season/:year", async (req, res, next) => {
       }`,
       variables: {
         season: req.params.season,
-        year: parseInt(req.params.year),
-        page: parseInt(req.query.p) || 1,
-        limit: parseInt(req.query.limit) || 20,
+        year: parseInt(req.params.year, 10),
+        page: parseInt(req.query.p, 10) || 1,
+        limit: parseInt(req.query.limit, 10) || 20,
       },
     });
     res
@@ -323,31 +342,36 @@ router.post("/search", async (req, res, next) => {
   }
 });
 
-// router.get("/episode/:id", async (req, res, next) => {
-//   try {
-//     const data = await AnifyModule.fetchAnimeInfoByAnilistId(req.params.id, "gogoanime");
-//     res.status(200).json(successRes(200, "success", { episodes: data.episodes }));
-//   } catch (error) {
-//     next(error);
-//   }
-// });
-
 router.get("/episode/:id", async (req, res, next) => {
   try {
-    const data = await v2.AniEpisodeList(req.params.id, req.query.data_src);
+    const data = await v2.AniEpisodeList({
+      id: req.params.id,
+      provider: req.query.provider || "gogoanime",
+    });
     res
       .status(200)
       .json(
         successRes(
           200,
           "success",
-          req.query.data_src == "all" ? { episodes: data } : { episodes: data.episodes }
+          req.query.provider === "all"
+            ? { episodes: data }
+            : { episodes: data.episodes }
         )
       );
   } catch (error) {
     next(error);
   }
 });
+
+// router.get("/episode/:id", async (req, res, next) => {
+//   try {
+//     const data = await v2.AniEpisodeMapper(req.params.id, req.query.data_src);
+//     res.status(200).json(successRes(200, "success", { episodes: data }));
+//   } catch (error) {
+//     next(error);
+//   }
+// });
 
 router.get("/random", async (req, res, next) => {
   try {
@@ -363,7 +387,7 @@ router.get("/random", async (req, res, next) => {
         id: data,
       })
     );
-  } catch (err) {
+  } catch (error) {
     next(error);
   }
 });

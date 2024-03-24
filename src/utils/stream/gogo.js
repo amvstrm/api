@@ -40,12 +40,37 @@ export const extract = async (id) => {
   const server = x$("#load_anime > div > div > iframe").attr("src");
   const videoUrl = new URL(server);
   referer = videoUrl.href;
+  console.log(server);
   const res = await axios.get(videoUrl.href, {
     headers: {
       "User-Agent": USER_AGENT,
     },
   });
   const $ = load(res.data);
+
+  const iframeUrls = [];
+  const liElements = $("#list-server-more > ul > li");
+  liElements.each((index, element) => {
+    const videoUrl = $(element).attr("data-video");
+    iframeUrls.push({
+      name: $(element).text(),
+      iframe: videoUrl
+    });
+  });
+
+
+  if (!iframeUrls.some(item => item.name.includes("Vidstreaming"))) {
+    return {
+      info: {
+        title,
+        id: ani_id,
+        episode: id.split("-episode-")[1],
+      },
+      sources: null,
+      tracks: "",
+      iframe: iframeUrls,
+    };
+  }
 
   const encyptedParams = await generateEncryptedAjaxParams(
     $,
@@ -62,6 +87,7 @@ export const extract = async (id) => {
   const decryptedData = await decryptAjaxData(encryptedData.data.data);
   if (!decryptedData.source)
     throw new Error("No source found. Try a different server.");
+
   let sources = [];
   decryptedData.source.forEach((source) => {
     sources.push({
@@ -78,18 +104,16 @@ export const extract = async (id) => {
       quality: "backup",
     });
   });
+
   return {
     info: {
       title,
       id: ani_id,
       episode: id.split("-episode-")[1],
     },
-    sources,
-    tracks: decryptedData.track.tracks,
-    iframe: {
-      default: videoUrl.href,
-      backup: decryptedData.linkiframe,
-    },
+    sources: sources,
+    tracks: decryptedData?.track.tracks,
+    iframe: iframeUrls.slice(1)
   };
 };
 

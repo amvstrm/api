@@ -10,7 +10,7 @@ export function successRes(status, message, data) {
 
 export function errorRes(status, message) {
   return {
-    code : status,
+    code: status,
     message: message || httpStatus[`${status}_MESSAGE`],
   };
 }

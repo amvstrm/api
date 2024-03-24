@@ -1,5 +1,6 @@
-export const SearchQ = () =>
-  `query ($page: Int = 1, $id: Int, $type: MediaType, $nsfw: Boolean, $search: String, $format: [MediaFormat], $status: MediaStatus, $size: Int, $countryOfOrigin: CountryCode, $source: MediaSource, $season: MediaSeason, $seasonYear: Int, $year: String, $onList: Boolean, $yearLesser: FuzzyDateInt, $yearGreater: FuzzyDateInt, $episodeLesser: Int, $episodeGreater: Int, $durationLesser: Int, $durationGreater: Int, $chapterLesser: Int, $chapterGreater: Int, $volumeLesser: Int, $volumeGreater: Int, $licensedBy: [String], $isLicensed: Boolean, $genres: [String], $excludedGenres: [String], $tags: [String], $excludedTags: [String], $minimumTagRank: Int, $sort: [MediaSort] = [POPULARITY_DESC, SCORE_DESC]) {
+/* eslint-disable default-param-last */
+export const SearchQ =
+  () => `query ($page: Int = 1, $id: Int, $type: MediaType, $nsfw: Boolean, $search: String, $format: [MediaFormat], $status: MediaStatus, $size: Int, $countryOfOrigin: CountryCode, $source: MediaSource, $season: MediaSeason, $seasonYear: Int, $year: String, $onList: Boolean, $yearLesser: FuzzyDateInt, $yearGreater: FuzzyDateInt, $episodeLesser: Int, $episodeGreater: Int, $durationLesser: Int, $durationGreater: Int, $chapterLesser: Int, $chapterGreater: Int, $volumeLesser: Int, $volumeGreater: Int, $licensedBy: [String], $isLicensed: Boolean, $genres: [String], $excludedGenres: [String], $tags: [String], $excludedTags: [String], $minimumTagRank: Int, $sort: [MediaSort] = [POPULARITY_DESC, SCORE_DESC]) {
     Page(page: $page, perPage: $size) {
       pageInfo {
         total
@@ -192,8 +193,7 @@ export const airingScheduleQuery = (
   start,
   end,
   notYetAired = false
-) =>
-  `query { 
+) => `query { 
     Page(
       page: ${page}, 
       perPage: ${perPage}) 
@@ -285,8 +285,7 @@ query {
   }
 }`;
 
-export const PopularQuery = (page = 1, perPage = 20) =>
-  `
+export const PopularQuery = (page = 1, perPage = 20) => `
   query { 
     Page(page: ${page}, perPage: ${perPage}) { 
       pageInfo { 

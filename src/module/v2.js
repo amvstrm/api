@@ -1,9 +1,9 @@
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable guard-for-in */
 import axios from "axios";
 import httpStatus from "http-status";
 import dotenv from "dotenv";
 import { ANIME } from "@consumet/extensions";
-
-dotenv.config();
 
 import {
   InfoQuery,
@@ -13,7 +13,8 @@ import {
   PopularQuery,
 } from "../model/aniquery.js";
 
-import v1 from "./v1.js";
+dotenv.config();
+
 const Gogo = new ANIME.Gogoanime();
 const Zoro = new ANIME.Zoro();
 const NineAnime = new ANIME.NineAnime();
@@ -50,9 +51,9 @@ const getIDeachProvider = async (json) => {
     for (const animeId in animeInfo) {
       const anime = animeInfo[animeId];
       if (animePage === "Gogoanime") {
-        idGogo = Object.values(json.data.Sites[animePage])[0]?.identifier || "";
+        idGogo = Object.values(json.data.Sites[animePage])[0].identifier || "";
         idGogoDub =
-          Object.values(json.data.Sites[animePage])[1]?.identifier || "";
+          Object.values(json.data.Sites[animePage])[1].identifier || "";
       } else if (animePage === "Zoro") {
         idZoro = anime.url.includes("https://zoro.to/")
           ? anime.url.replace("https://zoro.to/", "")
@@ -97,9 +98,7 @@ const AnimeInfo = async (id) => {
       }
     }
 
-    const relations = data.data.Media.relations.edges.map((node) => {
-      return node.node;
-    });
+    const relations = data.data.Media.relations.edges.map((node) => node.node);
 
     return {
       id: data.data.Media.id,
@@ -149,7 +148,7 @@ const AnimeSearch = async (query, page, limit) => {
       query: querys,
       variables: {
         search: query,
-        page: page,
+        page,
         size: limit,
         type: "ANIME",
       },
@@ -199,9 +198,9 @@ const SimilarAnime = async (id, page = 1, limit = 12) => {
     });
     const data = Recndtdata.data.data.Media;
     const recommendations =
-      Recndtdata.data.data.Media.recommendations.nodes.map((node) => {
-        return node.mediaRecommendation;
-      });
+      Recndtdata.data.data.Media.recommendations.nodes.map(
+        (node) => node.mediaRecommendation
+      );
     return {
       info: {
         id: data.id,
@@ -296,7 +295,7 @@ const AnimeAiringSchedule = async ({ page = 1, perPage = 12 }) => {
         description: item.media.description,
         bannerImage: item.media.bannerImage,
         genres: item.media.genres,
-        color: item.media.coverImage?.color,
+        color: item.media.coverImage.color,
         rating: item.media.averageScore,
         releaseDate: item.media.seasonYear,
         type: item.media.format,
@@ -357,7 +356,6 @@ const AniPopularData = async (page, limit) => {
     const data = await FetchAnilist.post("", {
       query: PopularQuery(page, limit),
     });
-    console.log(data);
     return {
       pageInfo: data.data.data.Page.pageInfo,
       results: data.data.data.Page.media,
@@ -381,13 +379,21 @@ const RandoAni = async (time = 1) => {
     const ids = data.split("\n");
     const result = [];
 
+    // eslint-disable-next-line no-plusplus
     for (let i = 0; i < time; i++) {
       const randomIndex = Math.floor(Math.random() * ids.length);
       result.push(ids[randomIndex]);
     }
+
     return result;
-  } catch (error) {
-    throw error;
+  } catch (err) {
+    if (err.response) {
+      return {
+        code: err.response.status,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
+      };
+    }
+    throw err;
   }
 };
 
@@ -485,20 +491,20 @@ const RandoAni = async (time = 1) => {
 // };
 
 const multiStream = async ({
+  providerId,
+  watchId,
+  episodeNumber,
   id,
-  data_src,
-  episode,
-  ani_id,
   subType,
   server,
 }) => {
   try {
     const { data } = await axios.post(`https://api.anify.tv/sources`, {
-      providerId: data_src,
-      watchId: data_src === "zoro" ? `/watch/${id}` : id,
-      episodeNumber: episode,
-      id: ani_id,
-      subType: subType || "sub",
+      providerId,
+      watchId: providerId === "zoro" ? `/watch/${watchId}` : watchId,
+      episodeNumber,
+      id,
+      subType,
       server,
     });
     return {
@@ -517,8 +523,7 @@ const multiStream = async ({
           null,
         backup:
           data.sources.find((item) => item.quality === "backup") ||
-          data.sources.find((item) => item.quality === "1080p") ||
-          data.sources.find((item) => item.quality === "720p") ||
+          data.sources[0] ||
           null,
         track:
           data.subtitles.find((track) => track.lang === "Thumbnails") || {},
@@ -538,19 +543,21 @@ const multiStream = async ({
   }
 };
 
-const AniEpisodeList = async (id, provider = "gogoanime") => {
+const AniEpisodeList = async ({ id, provider }) => {
   try {
     const { data } = await axios.get(`https://api.anify.tv/episodes/${id}`);
     if (provider === "all") {
       const transformedData = [];
+      // eslint-disable-next-line no-restricted-syntax, no-shadow
       for (const provider of data) {
         const episodes = Array.from(provider.episodes, (episode) => ({
           id:
+            // eslint-disable-next-line no-nested-ternary
             provider.providerId === "gogoanime"
               ? episode.id.replace("/", "")
               : provider.providerId === "zoro"
-              ? episode.id.replace("/watch/", "")
-              : episode.id,
+                ? episode.id.replace("/watch/", "")
+                : episode.id,
           episode: episode.number,
           title: episode.title,
           isFiller: episode.isFiller,
@@ -560,7 +567,7 @@ const AniEpisodeList = async (id, provider = "gogoanime") => {
 
         transformedData.push({
           providerId: provider.providerId,
-          episodes: episodes,
+          episodes,
         });
       }
       return transformedData;
@@ -569,11 +576,12 @@ const AniEpisodeList = async (id, provider = "gogoanime") => {
     if (result) {
       const episodes = Array.from(result.episodes, (episode) => ({
         id:
+          // eslint-disable-next-line no-nested-ternary
           provider === "gogoanime"
             ? episode.id.replace("/", "")
             : provider === "zoro"
-            ? episode.id.replace("/watch/", "")
-            : episode.id,
+              ? episode.id.replace("/watch/", "")
+              : episode.id,
         episode: episode.number,
         title: episode.title,
         isFiller: episode.isFiller,
@@ -596,18 +604,23 @@ const AniEpisodeList = async (id, provider = "gogoanime") => {
   }
 };
 
+// eslint-disable-next-line default-param-last, no-unused-vars
 const AniEpisodeMapper = async (id, provider = "gogoanime", dub) => {
   const json = await FetchMalSyncData(id);
   const getID = await getIDeachProvider(json);
   let data;
 
-  if (provider == "gogoanime") {
+  if (provider === "gogoanime") {
     data = (await Gogo.fetchAnimeInfo(getID.idGogo)).episodes;
-  } else if (provider == "zoro" || provider == "aniwatch") {
+  } else if (
+    provider === "zoro" ||
+    provider === "aniwatch" ||
+    provider === "hianime"
+  ) {
     data = (await Zoro.fetchAnimeInfo(getID.idZoro)).episodes;
-  } else if (provider == "aniwave" || provider == "9anime") {
+  } else if (provider === "aniwave" || provider === "9anime") {
     data = (await NineAnime.fetchAnimeInfo(getID.id9anime)).episodes;
-  } else if (provider == "animepahe") {
+  } else if (provider === "animepahe") {
     data = (await AnimePahe.fetchAnimeInfo(getID.idPahe)).episodes;
   }
 

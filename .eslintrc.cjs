@@ -1,5 +1,3 @@
-import { off } from "process";
-
 module.exports = {
   root: true,
   env: {

@@ -1,11 +1,15 @@
+/* eslint-disable import/no-named-as-default */
+/* eslint-disable import/no-named-as-default-member */
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import apicache from "apicache-plus";
-import Redis from "ioredis";
+import { readFileSync } from "fs";
 
 import v1 from "./v1.js";
 import v2 from "./v2.js";
+
+const pkg = JSON.parse(readFileSync("./package.json"));
 
 dotenv.config();
 const router = Router();
@@ -13,9 +17,10 @@ const router = Router();
 const allowlist = process.env.ALLOWLIST.split(",") || "";
 const limiter = rateLimit({
   windowMs: 60000,
-  max: (req, res) => {
-    if (!allowlist.includes(req.headers.origin || req.headers.host))
-      return parseInt(process.env.RATE_LIMIT) || 200;
+  max: (req) => {
+    if (!allowlist.includes(req.headers.origin || req.headers.host)) {
+      return parseInt(process.env.RATE_LIMIT, 10) || 200;
+    }
     return 0;
   },
   standardHeaders: false,
@@ -26,15 +31,14 @@ const limiter = rateLimit({
       message: "Too many requests, please wait before sending another request.",
     });
   },
-  skip: async (req) => {
-    return allowlist.includes(req.headers.origin || req.headers.host);
-  },
+  skip: async (req) => allowlist.includes(req.headers.origin || req.headers.host),
 });
 
 let ifHit = false;
 
 const cache = apicache.options({
   afterHit: () => {
+    // eslint-disable-next-line no-console
     console.log(ifHit);
     ifHit = true;
     return true;
@@ -44,7 +48,7 @@ const cache = apicache.options({
 
 router.use("/", cache("30 minutes"), (req, res, next) => {
   res.setHeader("x-amv-cache", ifHit ? "HIT" : "MISS");
-  
+  res.setHeader("x-amv-version", pkg.version || "0.0.0");
   next();
 });
 router.use("/", limiter);

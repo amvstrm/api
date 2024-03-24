@@ -45,10 +45,11 @@ router.get("/episode/:id", async (req, res, next) => {
 // Route to get recent episodes of a specific type
 router.get("/recentepisode/:type", async (req, res, next) => {
   try {
-    const type = req.params.type;
+    const { type } = req.params;
     const data = await v1.recentReleaseEpisodesType(
       req.query.p,
-      type == "all" ? 1 : type == "dub" ? 2 : type == "cn" ? 3 : 1
+      // eslint-disable-next-line no-nested-ternary
+      type === "all" ? 1 : type === "dub" ? 2 : type === "cn" ? 3 : 1
     );
     if (data.error) {
       next(data.error);
@@ -175,7 +176,7 @@ router.get("/season/:season/:year", async (req, res, next) => {
 // Route to get movies for a specific page
 router.get("/movies/:page", async (req, res, next) => {
   try {
-    const page = req.params.page;
+    const { page } = req.params;
     const data = await v1.movies(page);
     if (data.error) {
       next(data.error);
@@ -189,7 +190,7 @@ router.get("/movies/:page", async (req, res, next) => {
 // Route to get popular movies for a specific page
 router.get("/popular/:page", async (req, res, next) => {
   try {
-    const page = req.params.page;
+    const { page } = req.params;
     const data = await v1.popular(page);
     if (data.error) {
       next(data.error);

@@ -4,7 +4,7 @@ import axios from "axios";
 import { load } from "cheerio";
 import CryptoJS from "crypto-js";
 
-const BASE_URL = "https://anitaku.to/";
+const BASE_URL = "https://anitaku.so/";
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36";
 const keys = {
@@ -14,6 +14,7 @@ const keys = {
 };
 
 let referer = "";
+
 export const extract = async (id) => {
   let datapg;
   try {
@@ -40,7 +41,6 @@ export const extract = async (id) => {
   const server = x$("#load_anime > div > div > iframe").attr("src");
   const videoUrl = new URL(server);
   referer = videoUrl.href;
-  console.log(server);
   const res = await axios.get(videoUrl.href, {
     headers: {
       "User-Agent": USER_AGENT,
@@ -54,12 +54,11 @@ export const extract = async (id) => {
     const videoUrl = $(element).attr("data-video");
     iframeUrls.push({
       name: $(element).text(),
-      iframe: videoUrl
+      iframe: videoUrl,
     });
   });
 
-
-  if (!iframeUrls.some(item => item.name.includes("Vidstreaming"))) {
+  if (!iframeUrls.some((item) => item.name.includes("Vidstreaming"))) {
     return {
       info: {
         title,
@@ -92,18 +91,29 @@ export const extract = async (id) => {
   decryptedData.source.forEach((source) => {
     sources.push({
       url: source.file,
+      label: source.label,
       isM3U8: source.file.includes(".m3u8"),
-      quality: "default",
+      quality: source.default === true ? "default" : source.default === undefined ? "default" : "default",
     });
   });
 
-  decryptedData.source_bk.forEach((source) => {
+  if (decryptedData.source_bk === "") {
     sources.push({
-      url: source.file,
-      isM3U8: source.file.includes(".m3u8"),
+      url: "",
+      label: "",
+      isM3U8: false,
       quality: "backup",
     });
-  });
+  } else {
+    decryptedData.source_bk.forEach((source) => {
+      sources.push({
+        url: source.file,
+        label: source.label,
+        isM3U8: source.file.includes(".m3u8"),
+        quality: "backup",
+      });
+    });
+  }
 
   return {
     info: {
@@ -113,7 +123,7 @@ export const extract = async (id) => {
     },
     sources: sources,
     tracks: decryptedData?.track.tracks,
-    iframe: iframeUrls.slice(1)
+    iframe: iframeUrls.slice(1),
   };
 };
 

@@ -28,7 +28,7 @@ const retrieveServerId = ($, index, subOrDub) => {
 
 export const get_stream = async (episodeId, server = "vidcloud") => {
   if (!episodeId.includes("$episode$")) throw new Error("Invalid episode id");
-  const subOrDub = episodeId.split("$")?.pop() === "dub" ? "dub" : "sub";
+  const subOrDub = episodeId.split("$").pop() === "dub" ? "dub" : "sub";
   episodeId = `${baseUrl}/watch/${episodeId
     .replace("$episode$", "?ep=")
     .replace(/\$auto|\$sub|\$dub/gi, "")}`;
@@ -54,137 +54,90 @@ export const get_stream = async (episodeId, server = "vidcloud") => {
   }
 };
 
-export const rapidExtract = async (videoLink) => {
-  const videoUrl = new URL(videoLink);
-  const fallbackKey = "c1d17096f2ca11b7";
-  const host = "https://rapid-cloud.co";
+export const extractVidCloud = async (url, result) => {
+  const host = "https://megacloud.tv";
+  const id = url.split("/").pop().split("?")[0];
 
-  const result = {
-    sources: [],
-    meta: {},
-    subtitles: [],
-  };
-
-  let res = null;
-
-  const id = videoUrl.href.split("/").pop()?.split("?")[0];
-  const options = {
+  const request = await fetch(`${host}/embed-2/ajax/e-1/getSources?id=${id}`, {
     headers: {
       "X-Requested-With": "XMLHttpRequest",
     },
-  };
+  });
 
-  res = await axios.get(
-    `https://${videoUrl.hostname}/embed-2/ajax/e-1/getSources?id=${id}`,
-    options
-  );
+  const reqData = await request.json();
+  const { tracks, intro, outro } = reqData;
+  let { sources } = reqData;
 
-  let {
-    data: { sources, tracks, intro, encrypted },
-  } = res;
+  const decryptKey = (await (await fetch("https://zoro.anify.tv/key/6")).json())
+    .key;
+  const encryptedURLTemp = sources.split("");
 
-  let decryptKey = await (
-    await axios.get("https://github.com/enimax-anime/key/blob/e6/key.txt")
-  ).data;
+  let key = "";
 
-  decryptKey = substringBefore(
-    substringAfter(decryptKey, '"blob-code blob-code-inner js-file-line">'),
-    "</td>"
-  );
-
-  if (!decryptKey) {
-    decryptKey = await (
-      await axios.get(
-        "https://raw.githubusercontent.com/enimax-anime/key/e6/key.txt"
-      )
-    ).data;
+  for (const index of JSON.parse(decryptKey)) {
+    for (let i = Number(index[0]); i < Number(index[1]); i++) {
+      key += encryptedURLTemp[i];
+      encryptedURLTemp[i] = "";
+    }
   }
 
-  if (!decryptKey) decryptKey = fallbackKey;
+  sources = encryptedURLTemp.filter((x) => x !== "").join("");
 
   try {
-    if (encrypted) {
-      const sourcesArray = sources.split("");
-      let extractedKey = "";
-
-      for (const index of decryptKey) {
-        for (let i = index[0]; i < index[1]; i++) {
-          extractedKey += sources[i];
-          sourcesArray[i] = "";
-        }
-      }
-
-      decryptKey = extractedKey;
-      sources = sourcesArray.join("");
-      const decrypt = CryptoJS.AES.decrypt(sources, decryptKey);
-      sources = JSON.parse(decrypt.toString(CryptoJS.enc.Utf8));
-    }
-  } catch (err) {
-    return err;
+    sources = JSON.parse(
+      CryptoJS.AES.decrypt(sources, key).toString(CryptoJS.enc.Utf8)
+    );
+  } catch (e) {
+    console.error(e);
+    sources = "";
   }
-  sources = sources?.map((s) => ({
-    url: s.file,
-    isM3U8: s.file.includes(".m3u8"),
-  }));
 
-  result.sources.push(...sources);
+  if (!sources || sources === "") {
+    return result;
+  }
 
-  if (videoUrl.href.includes(new URL(host).host)) {
-    result.sources = [];
-    sources = [];
-    for (const source of sources) {
-      const { data } = await client.get(source.file, options);
-      const m3u8data = data
-        .split("\n")
-        .filter(
-          (line) => line.includes(".m3u8") && line.includes("RESOLUTION=")
-        );
+  for (const source of sources) {
+    if (source.type === "hls") {
+      const data = await (await fetch(source.file)).text();
 
-      const secondHalf = m3u8data.map((line) =>
-        line.match(/RESOLUTION=.*,(C)|URI=.*/g)?.map((s) => s.split("=")[1])
-      );
+      const resolutions = data.match(/(RESOLUTION=)(.*)(\s*?)(\s*.*)/g);
 
-      const TdArray = secondHalf.map((s) => {
-        const f1 = s[0].split(",C")[0];
-        const f2 = s[1].replace(/"/g, "");
+      resolutions?.forEach((res) => {
+        const index = source.file.lastIndexOf("/");
+        const quality = res.split("\n")[0].split("x")[1].split(",")[0];
+        const url = source.file.slice(0, index);
 
-        return [f1, f2];
-      });
-      for (const [f1, f2] of TdArray) {
-        sources.push({
-          url: `${source.file?.split("master.m3u8")[0]}${f2.replace(
-            "iframes",
-            "index"
-          )}`,
-          quality: f1.split("x")[1] + "p",
-          isM3U8: f2.includes(".m3u8"),
+        result.sources.push({
+          url: url + "/" + res.split("\n")[1],
+          quality: quality + "p",
         });
-      }
-      result.sources.push(...sources);
+      });
     }
+
     if (intro.end > 1) {
       result.intro = {
         start: intro.start,
         end: intro.end,
       };
     }
+    if (outro.end > 1) {
+      result.outro = {
+        start: outro.start,
+        end: outro.end,
+      };
+    }
   }
 
-  result.subtitles = res.data.tracks
-    .filter((track) => track.kind === "captions")
-    .map((subtitle) => {
-      return {
-        file: subtitle.file,
-        label: subtitle.label,
-      };
-    });
+  result.sources.push({
+    url: sources[0].file,
+    quality: "auto",
+  });
 
-  result.meta = {
-    intro: res.data.intro || null,
-    outro: res.data.outro || null,
-    thumbnails: res.data.tracks.find((track) => track.kind === "thumbnails")
-      .file,
-  };
+  result.subtitles = tracks?.map((s) => ({
+    url: s.file,
+    lang: s.label ? s.label : "Thumbnails",
+  }));
+
   return result;
 };
 

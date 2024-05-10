@@ -1,7 +1,7 @@
 {
   "main": "index.js",
   "type": "module",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
@@ -23,7 +23,8 @@
     "helmet": "^6.0.1",
     "http-status": "^1.6.2",
     "ioredis": "^5.3.2",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/apicache": "^1.6.3",

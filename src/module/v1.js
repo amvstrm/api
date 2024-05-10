@@ -424,28 +424,26 @@ const animeInfo = async (id) => {
     const animeTitle = $("div.anime_info_body_bg > h1").text();
     const animeImage = $("div.anime_info_body_bg > img").attr("src");
     const type = $("div.anime_info_body_bg > p:nth-child(4) > a").text();
-    const desc = $("div.anime_info_body_bg > p:nth-child(5)")
+    const desc = $("div.anime_info_body_bg > .description")
       .text()
       .replace("Plot Summary: ", "");
-    const releasedDate = $("div.anime_info_body_bg > p:nth-child(7)")
+    const releasedDate = $("div.anime_info_body_bg > p:nth-child(8)")
       .text()
       .replace("Released: ", "");
-    const status = $("div.anime_info_body_bg > p:nth-child(8) > a").text();
-    const otherName = $("div.anime_info_body_bg > p:nth-child(9)")
+    const status = $("div.anime_info_body_bg > p:nth-child(9) > a").text();
+    const otherName = $("div.anime_info_body_bg > p:nth-child(10)")
       .text()
-      .replace("Other name: ", "")
-      .replace(/;/g, ",");
+      .replace("Other name: ", "").trim()
 
-    $("div.anime_info_body_bg > p:nth-child(6) > a").each((_i, elem) => {
+    $("div.anime_info_body_bg > p:nth-child(7) > a").each((_i, elem) => {
       genres.push($(elem).attr("title").trim());
     });
-
     const ep_end = $("#episode_page > li").last().find("a").attr("ep_end");
 
     return {
       title: animeTitle.toString(),
       id,
-      season: type.toString().replace("Anime", ""),
+      type: type.toString().replace("Anime", ""),
       released: releasedDate.toString(),
       status: status.toString(),
       genres,

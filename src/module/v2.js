@@ -51,13 +51,13 @@ const getIDeachProvider = async (json) => {
     for (const animeId in animeInfo) {
       const anime = animeInfo[animeId];
       if (animePage === "Gogoanime") {
-        idGogo = Object.values(json.data.Sites[animePage])[0].identifier || "";
+        idGogo = Object.values(json.data.Sites[animePage])[0]?.identifier || "";
         idGogoDub =
-          Object.values(json.data.Sites[animePage])[1].identifier || "";
+          Object.values(json.data.Sites[animePage])[1]?.identifier || "";
       } else if (animePage === "Zoro") {
         idZoro = anime.url.includes("https://zoro.to/")
           ? anime.url.replace("https://zoro.to/", "")
-          : anime.url.replace("https://aniwatch.to/", "");
+          : anime.url.replace("https://hianime.to/", "");
       } else if (animePage === "9anime") {
         id9anime = anime.url.includes("https://aniwave.to/")
           ? anime.url.replace("https://aniwave.to/watch/", "")

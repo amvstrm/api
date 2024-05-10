@@ -2,16 +2,13 @@
 import { Router } from "express";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import CryptoJS from "crypto-js";
-import { ANIME, META } from "@consumet/extensions";
 import axios from "axios";
 
+// eslint-disable-next-line import/no-named-as-default, import/no-named-as-default-member
 import v2 from "../module/v2.js";
 import { extract } from "../utils/stream/gogo.js";
 
 import { successRes, errorRes } from "../model/res.js";
-
-const AnilistModule = new META.Anilist();
-const AnifyModule = new ANIME.Anify();
 
 const router = Router();
 
@@ -21,9 +18,10 @@ function base64encode(string) {
   return encoded;
 }
 
-// IN DEVELOPMENT
 router.get("/stream/multi", async (req, res) => {
-  const { providerId, watchId, episodeNumber, id, subType, server } = req.query;
+  const {
+    providerId, watchId, episodeNumber, id, subType, server 
+  } = req.query;
   try {
     const data = await v2.multiStream({
       providerId,
@@ -84,24 +82,24 @@ router.get("/stream/:id", async (req, res, next) => {
           data.sources === null
             ? null
             : {
-                main: `https://plyr.link/p/player.html#${base64encode(
-                  mainstrm.url
-                )}`,
-                backup: `https://plyr.link/p/player.html#${base64encode(
-                  bkstrm.url
-                )}`,
-              },
+              main: `https://plyr.link/p/player.html#${base64encode(
+                mainstrm.url
+              )}`,
+              backup: `https://plyr.link/p/player.html#${base64encode(
+                bkstrm.url
+              )}`,
+            },
         nspl:
           data.sources === null
             ? null
             : {
-                main: `https://nspl.nyt92.eu.org/player?p=${base64encode(
-                  `&title=${id}&file=${mainstrm.url}&thumbnails=${dtatrack.file}`
-                )}`,
-                backup: `https://nspl.nyt92.eu.org/player?p=${base64encode(
-                  `&title=${id}&file=${bkstrm.url}&thumbnails=${dtatrack.file}`
-                )}`,
-              } || null,
+              main: `https://nspl.nyt92.eu.org/player?p=${base64encode(
+                `&title=${id}&file=${mainstrm.url}&thumbnails=${dtatrack.file}`
+              )}`,
+              backup: `https://nspl.nyt92.eu.org/player?p=${base64encode(
+                `&title=${id}&file=${bkstrm.url}&thumbnails=${dtatrack.file}`
+              )}`,
+            } || null,
       })
     );
   } catch (error) {
@@ -115,13 +113,19 @@ router.get("/stream/skiptime/:id/:ep_id", async (req, res, next) => {
     if (data.error) {
       next(data.error);
     }
+    const dataSkT = data.results
+      ? {
+        op: data.results.find((item) => item.skipType === "op"),
+        ed: data.results.find((item) => item.skipType === "ed"),
+      }
+      : {
+        op: null,
+        ed: null,
+      };
     res.status(200).json(
       successRes(200, "success", {
         found: data.found,
-        results: {
-          op: data.results.find((item) => item.skipType === "op") || null,
-          ed: data.results.find((item) => item.skipType === "ed") || null,
-        },
+        results: dataSkT,
       })
     );
   } catch (error) {
@@ -181,32 +185,6 @@ router.get("/popular", async (req, res, next) => {
     next(error);
   }
 });
-
-// router.get("/recent", async (req, res, next) => {
-//   try {
-//     const data = await v2.AniRecent(1);
-//     res.json(data);
-//   } catch (error) {
-//     console.log(error);
-//     next(error);
-//   }
-// });
-
-// router.get("/schedule", async (req, res, next) => {
-//   const { p = 1, limit } = req.query;
-//   try {
-//     const data = await v2.AnimeAiringSchedule({
-//       page: p,
-//       perPage: limit,
-//     });
-//     if (data.error) {
-//       next(data.error);
-//     }
-//     res.json(successRes(200, "success", data));
-//   } catch (error) {
-//     next(error);
-//   }
-// });
 
 router.get("/schedule", async (req, res, next) => {
   try {
@@ -363,15 +341,6 @@ router.get("/episode/:id", async (req, res, next) => {
     next(error);
   }
 });
-
-// router.get("/episode/:id", async (req, res, next) => {
-//   try {
-//     const data = await v2.AniEpisodeMapper(req.params.id, req.query.data_src);
-//     res.status(200).json(successRes(200, "success", { episodes: data }));
-//   } catch (error) {
-//     next(error);
-//   }
-// });
 
 router.get("/random", async (req, res, next) => {
   try {

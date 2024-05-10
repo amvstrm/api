@@ -8,18 +8,19 @@ import { readFileSync } from "fs";
 
 import v1 from "./v1.js";
 import v2 from "./v2.js";
+import { env } from "../utils/env.js";
 
 const pkg = JSON.parse(readFileSync("./package.json"));
 
 dotenv.config();
 const router = Router();
 
-const allowlist = process.env.ALLOWLIST.split(",") || "";
+const allowlist = env.data.ALLOWLIST.split(",") || "";
 const limiter = rateLimit({
   windowMs: 60000,
   max: (req) => {
     if (!allowlist.includes(req.headers.origin || req.headers.host)) {
-      return parseInt(process.env.RATE_LIMIT, 10) || 200;
+      return parseInt(env.data.RATE_LIMIT, 10) || 200;
     }
     return 0;
   },

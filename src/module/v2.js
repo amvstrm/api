@@ -4,6 +4,7 @@ import axios from "axios";
 import httpStatus from "http-status";
 import dotenv from "dotenv";
 import { ANIME } from "@consumet/extensions";
+import { ofetch } from "ofetch";
 
 import {
   InfoQuery,
@@ -28,14 +29,44 @@ const FetchAnilist = axios.create({
   },
 });
 
-const FetchMalSyncData = async (malid) => {
+const FetchMappingData = async (id) => {
+  const malBackupData = await ofetch(
+    `https://raw.githubusercontent.com/bal-mackup/mal-backup/master/anilist/anime/${id}.json`,
+    {
+      cache: "force-cache",
+      responseType: "json",
+    }
+  ).catch((err) => err);
+
+  if (malBackupData === "404 Not Found" || malBackupData.statusCode === 404) {
+    const malBackupData_2 = await ofetch(
+      `https://api-mappings.madara.live/anime/${id}`,
+      {
+        cache: "force-cache",
+      }
+    ).catch((err) => err);
+    return malBackupData_2.mappings.malSync;
+  }
+
+  return malBackupData;
+};
+
+const FetchMalsyncData = async (id) => {
   const data = await axios
-    .get(
-      `https://raw.githubusercontent.com/bal-mackup/mal-backup/master/anilist/anime/${malid}.json`
-    )
-    .catch(
-      (err) => httpStatus[`${err.response.status}_MESSAGE`] || err.message
-    );
+    .get(`https://api.malsync.moe/mal/anime/${id}`, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
+        Accept: "application/json",
+        referer: "https://www.malsync.moe/",
+      },
+    })
+    .catch((err) => {
+      return {
+        code: err.response.status,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
+      };
+    });
   return data;
 };
 
@@ -46,14 +77,13 @@ const getIDeachProvider = async (json) => {
   let id9anime = "";
   let idPahe = "";
 
-  for (const animePage in json.data.Sites) {
-    const animeInfo = json.data.Sites[animePage];
+  for (const animePage in json.Sites) {
+    const animeInfo = json.Sites[animePage];
     for (const animeId in animeInfo) {
       const anime = animeInfo[animeId];
       if (animePage === "Gogoanime") {
-        idGogo = Object.values(json.data.Sites[animePage])[0]?.identifier || "";
-        idGogoDub =
-          Object.values(json.data.Sites[animePage])[1]?.identifier || "";
+        idGogo = Object.values(json.Sites[animePage])[0]?.identifier || "";
+        idGogoDub = Object.values(json.Sites[animePage])[1]?.identifier || "";
       } else if (animePage === "Zoro") {
         idZoro = anime.url.includes("https://zoro.to/")
           ? anime.url.replace("https://zoro.to/", "")
@@ -83,16 +113,20 @@ const AnimeInfo = async (id) => {
     const { data } = await FetchAnilist.post("", {
       query,
     });
-    const masdata = await FetchMalSyncData(data.data.Media.id);
 
+    const masdata = await FetchMappingData(id);
+    console.log(masdata);
     let idprovider;
     let isDub = false;
-    if (!masdata || !masdata.data || !masdata.data.Sites) {
+    if (!masdata || masdata === null || masdata === undefined) {
       idprovider = null;
+    } else if (!masdata.Sites?.Gogoanime) {
+      idprovider = null;
+      isDub = false;
     } else {
       idprovider = await getIDeachProvider(masdata);
-      if (masdata.data.Sites.Gogoanime) {
-        if (JSON.stringify(masdata.data.Sites.Gogoanime).includes("dub")) {
+      if (masdata.Sites?.Gogoanime) {
+        if (JSON.stringify(masdata.Sites.Gogoanime).includes("dub")) {
           isDub = true;
         }
       }
@@ -131,6 +165,7 @@ const AnimeInfo = async (id) => {
       relation: relations,
     };
   } catch (err) {
+    console.log(err);
     if (err.response) {
       return {
         code: err.response.status,
@@ -556,8 +591,8 @@ const AniEpisodeList = async ({ id, provider }) => {
             provider.providerId === "gogoanime"
               ? episode.id.replace("/", "")
               : provider.providerId === "zoro"
-                ? episode.id.replace("/watch/", "")
-                : episode.id,
+              ? episode.id.replace("/watch/", "")
+              : episode.id,
           episode: episode.number,
           title: episode.title,
           isFiller: episode.isFiller,
@@ -580,8 +615,8 @@ const AniEpisodeList = async ({ id, provider }) => {
           provider === "gogoanime"
             ? episode.id.replace("/", "")
             : provider === "zoro"
-              ? episode.id.replace("/watch/", "")
-              : episode.id,
+            ? episode.id.replace("/watch/", "")
+            : episode.id,
         episode: episode.number,
         title: episode.title,
         isFiller: episode.isFiller,
@@ -606,7 +641,7 @@ const AniEpisodeList = async ({ id, provider }) => {
 
 // eslint-disable-next-line default-param-last, no-unused-vars
 const AniEpisodeMapper = async (id, provider = "gogoanime", dub) => {
-  const json = await FetchMalSyncData(id);
+  const json = await FetchMappingData(id);
   const getID = await getIDeachProvider(json);
   let data;
 

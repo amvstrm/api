@@ -3,7 +3,7 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
-import apicache from "apicache-plus";
+import apicache from "apicache-extra";
 import { readFileSync } from "fs";
 
 import v1 from "./v1.js";
@@ -45,6 +45,7 @@ const cache = apicache.options({
     return true;
   },
   defaultDuration: "1 hour",
+  isBypassable: true,
 }).middleware;
 
 router.use("/", cache("30 minutes"), (req, res, next) => {

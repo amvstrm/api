@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default-member */
 /* eslint-disable no-tabs */
 import { Router } from "express";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -5,6 +6,8 @@ import CryptoJS from "crypto-js";
 import axios from "axios";
 
 // eslint-disable-next-line import/no-named-as-default, import/no-named-as-default-member
+import { META } from "@consumet/extensions";
+// eslint-disable-next-line import/no-named-as-default
 import v2 from "../module/v2.js";
 import { extract } from "../utils/stream/gogo.js";
 
@@ -12,35 +15,37 @@ import { successRes, errorRes } from "../model/res.js";
 
 const router = Router();
 
+const anilist = new META.Anilist();
+
 function base64encode(string) {
   const encodedWord = CryptoJS.enc.Utf8.parse(string);
   const encoded = CryptoJS.enc.Base64.stringify(encodedWord);
   return encoded;
 }
 
-router.get("/stream/multi", async (req, res) => {
-  const {
-    providerId, watchId, episodeNumber, id, subType, server 
-  } = req.query;
-  try {
-    const data = await v2.multiStream({
-      providerId,
-      watchId,
-      episodeNumber,
-      id,
-      subType,
-      server,
-    });
-    res.status(200).json(successRes(200, "", data));
-  } catch (err) {
-    if (err.response) {
-      return res
-        .status(err.response.status)
-        .json(errorRes(err.response.status, err.message));
-    }
-    throw err;
-  }
-});
+// router.get("/stream/multi", async (req, res) => {
+//   const {
+//     providerId, watchId, episodeNumber, id, subType, server 
+//   } = req.query;
+//   try {
+//     const data = await v2.multiStream({
+//       providerId,
+//       watchId,
+//       episodeNumber,
+//       id,
+//       subType,
+//       server,
+//     });
+//     res.status(200).json(successRes(200, "", data));
+//   } catch (err) {
+//     if (err.response) {
+//       return res
+//         .status(err.response.status)
+//         .json(errorRes(err.response.status, err.message));
+//     }
+//     throw err;
+//   }
+// });
 
 router.get("/stream/:id", async (req, res, next) => {
   const { id } = req.params;
@@ -322,27 +327,19 @@ router.post("/search", async (req, res, next) => {
 
 router.get("/episode/:id", async (req, res, next) => {
   try {
-    const data = await v2.AniEpisodeList({
-      id: req.params.id,
-      provider: req.query.provider || "gogoanime",
-    });
-    res
-      .status(200)
-      .json(
-        successRes(
-          200,
-          "success",
-          req.query.provider === "all"
-            ? { episodes: data }
-            : { episodes: data.episodes }
-        )
-      );
+    const data = await anilist.fetchEpisodesListById(
+      req.params.id,
+      req.query.dub,
+      req.query.filler
+    );
+    return res.status(200).json(successRes(200, "success", { episodes: data }));
   } catch (error) {
     next(error);
   }
 });
 
 router.get("/random", async (req, res, next) => {
+  res.setHeader("cache-control", "no-cache");
   try {
     const generated_ammt = req.query.generated || 1;
     const data = await v2.RandoAni(generated_ammt);

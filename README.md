@@ -37,8 +37,9 @@ We are using these to power our API...
 
 - [@consumet/extensions](https://github.com/consumet/consumet.ts)
 - [riimuru/gogoanime-api](https://github.com/riimuru/gogoanime-api)
-- [Gogoanime & Video source provider](https://gogoanime.cl) 
+- [Gogoanime & Video source provider](https://anitaku.pe) 
 - [MAL-Sync-Backup](https://github.com/MALSync/MAL-Sync-Backup)
+- [Anime Mappings by codeblitz97](https://api-mappings.madara.live/)
 - [Anilist](https://anilist.com)
 - [Ani-skip](http://api.aniskip.com/)
 

@@ -2,17 +2,20 @@
 
 amvstrm's API that powered [amvstrm](https://amvstr.me)
 
-_You can now use our official API url here : https://api.amvstr.me_
+_Our official API is ``api.amvstr.me``_
+
+## Usage
+
+Our public API are hosted on the same free cloud provider and don't blame us why the API is unusable. 
+
+The public API will only be used for TESTING & APP MODULE (miru-project for example). Self-host your own API if you do high volume requests. 
+
+All API will be rate limited from 80 to 60 per min. We will blocked the API that attempted to use our Prod instance and logged as much as possible. We have right to do it.
 
 ## Deploy
 
 - Vercel, Railway, Docker, and other provider  
   [Deploy guide](https://docs.amvstr.me/guide/backend)
-
-- Deta  
-  You can now install our app on deta.space with zero configuration. [Install Now](https://deta.space/discovery/r/xibypvztmuln878e)
-
-More info at our [DOCS](https://docs.amvstr.me)
 
 ## Features
 
@@ -37,8 +40,9 @@ We are using these to power our API...
 
 - [@consumet/extensions](https://github.com/consumet/consumet.ts)
 - [riimuru/gogoanime-api](https://github.com/riimuru/gogoanime-api)
-- [Gogoanime & Video source provider](https://gogoanime.cl) 
+- [Gogoanime & Video source provider](https://anitaku.pe) 
 - [MAL-Sync-Backup](https://github.com/MALSync/MAL-Sync-Backup)
+- [Anime Mappings by codeblitz97](https://api-mappings.madara.live/)
 - [Anilist](https://anilist.com)
 - [Ani-skip](http://api.aniskip.com/)
 

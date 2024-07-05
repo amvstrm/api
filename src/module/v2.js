@@ -38,7 +38,11 @@ const FetchMappingData = async (id) => {
     }
   ).catch((err) => err);
 
-  if (malBackupData === "404 Not Found" || malBackupData.statusCode === 404) {
+  if (
+    malBackupData === "404 Not Found" ||
+    malBackupData.statusCode === 404 ||
+    Object.keys(malBackupData.Sites).length === 0
+  ) {
     const malBackupData_2 = await ofetch(
       `https://api-mappings.madara.live/anime/${id}`,
       {

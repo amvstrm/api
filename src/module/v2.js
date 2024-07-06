@@ -119,7 +119,6 @@ const AnimeInfo = async (id) => {
     });
 
     const masdata = await FetchMappingData(id);
-    console.log(masdata);
     let idprovider;
     let isDub = false;
     if (!masdata || masdata === null || masdata === undefined) {

@@ -11,19 +11,9 @@ import api from "./routes/index.js";
 import { env } from "./utils/env.js";
 
 const app = express();
-const corsOptionsDelegate = function (req, callback) {
-  let corsOptions;
-  if (env.data.ALLOWLIST.indexOf(req.header("Origin")) !== -1) {
-    corsOptions = { origin: true };
-  } else {
-    corsOptions = { origin: false };
-  }
-  callback(null, corsOptions);
-};
+
 app.use(morgan("dev"));
 app.use(helmet());
-app.use(cors(corsOptionsDelegate));
-
 app.use(json());
 app.use(urlencoded({ extended: true }));
 

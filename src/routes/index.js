@@ -5,10 +5,12 @@ import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import apicache from "apicache-extra";
 import { readFileSync } from "fs";
+import cors from "cors";
 
 import v1 from "./v1.js";
 import v2 from "./v2.js";
 import { env } from "../utils/env.js";
+import { checkDomain, empty } from "../middlewares.js";
 
 const pkg = JSON.parse(readFileSync("./package.json"));
 
@@ -48,6 +50,27 @@ const cache = apicache.options({
   isBypassable: true,
 }).middleware;
 
+router.use("/", env.data.BLOCK_WITH_CORS === "true" ? checkDomain : empty);
+router.use(
+  "/",
+  cors({
+    origin(origin, callback) {
+      if (env.data.ALLOWLIST.includes(origin) || env.data.BLOCK_WITH_CORS === "true") {
+        const msg = "blocked";
+        return callback(new Error(msg), false);
+      } 
+      if (env.data.BLOCK_WITH_CORS === "false") {
+        return callback(null, "*");
+      }
+    },
+    exposedHeaders: [
+      "x-amv-trueIP",
+      "x-amv-trueHost",
+      "x-amv-trueUA",
+      "x-amv-info",
+    ],
+  })
+);
 router.use("/", cache("30 minutes"), (req, res, next) => {
   res.setHeader("x-amv-cache", ifHit ? "HIT" : "MISS");
   res.setHeader("x-amv-version", pkg.version || "0.0.0");

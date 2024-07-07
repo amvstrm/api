@@ -34,7 +34,8 @@ const limiter = rateLimit({
       message: "Too many requests, please wait before sending another request.",
     });
   },
-  skip: async (req) => allowlist.includes(req.headers.origin || req.headers.host),
+  skip: async (req) =>
+    allowlist.includes(req.headers.origin || req.headers.host),
 });
 
 let ifHit = false;
@@ -54,15 +55,10 @@ router.use("/", env.data.BLOCK_WITH_CORS === "true" ? checkDomain : empty);
 router.use(
   "/",
   cors({
-    origin(origin, callback) {
-      if (env.data.ALLOWLIST.includes(origin) || env.data.BLOCK_WITH_CORS === "true") {
-        const msg = "blocked";
-        return callback(new Error(msg), false);
-      } 
-      if (env.data.BLOCK_WITH_CORS === "false") {
-        return callback(null, "*");
-      }
-    },
+    origin:
+      env.data.BLOCK_WITH_CORS === "true" && env.data.ALLOWLIST
+        ? env.data.ALLOWLIST.split(",")
+        : "*",
     exposedHeaders: [
       "x-amv-trueIP",
       "x-amv-trueHost",

@@ -34,13 +34,12 @@ const limiter = rateLimit({
       message: "Too many requests, please wait before sending another request.",
     });
   },
-  skip: async (req) =>
-    allowlist.includes(req.headers.origin || req.headers.host),
+  skip: async (req) => allowlist.includes(req.headers.origin || req.headers.host),
 });
 
 let ifHit = false;
 
-const cache = apicache.options({
+export const cache = apicache.options({
   afterHit: () => {
     // eslint-disable-next-line no-console
     console.log(ifHit);
@@ -51,7 +50,6 @@ const cache = apicache.options({
   isBypassable: true,
 }).middleware;
 
-router.use("/", env.data.BLOCK_WITH_CORS === "true" ? checkDomain : empty);
 router.use(
   "/",
   cors({
@@ -67,11 +65,13 @@ router.use(
     ],
   })
 );
-router.use("/", cache("30 minutes"), (req, res, next) => {
+router.use("/", checkDomain);
+router.use("/", (req, res, next) => {
   res.setHeader("x-amv-cache", ifHit ? "HIT" : "MISS");
   res.setHeader("x-amv-version", pkg.version || "0.0.0");
   next();
 });
+router.use("/", cache("30 minutes"));
 router.use("/", limiter);
 router.use("/v1", v1);
 router.use("/v2", v2);

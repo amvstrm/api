@@ -28,7 +28,6 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/apicache": "^1.6.3",
     "eslint": "^8.35.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.27.5",

@@ -13,6 +13,7 @@ import {
   TrendingQuery,
   PopularQuery,
 } from "../model/aniquery.js";
+import { incorrectDataID } from "../utils/incorrectData.js";
 
 dotenv.config();
 
@@ -56,26 +57,7 @@ const FetchMappingData = async (id) => {
   return malBackupData;
 };
 
-const FetchMalsyncData = async (id) => {
-  const data = await axios
-    .get(`https://api.malsync.moe/mal/anime/${id}`, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
-        Accept: "application/json",
-        referer: "https://www.malsync.moe/",
-      },
-    })
-    .catch((err) => {
-      return {
-        code: err.response.status,
-        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
-      };
-    });
-  return data;
-};
-
-const getIDeachProvider = async (json) => {
+const getIDeachProvider = async (json, id) => {
   let idGogo = "";
   let idGogoDub = "";
   let idZoro = "";
@@ -103,6 +85,16 @@ const getIDeachProvider = async (json) => {
     }
   }
 
+  if (incorrectDataID().find((item) => item.id === id)) {
+    return {
+      idGogo: incorrectDataID().find((item) => item.id === id).idGogo,
+      idGogoDub: incorrectDataID().find((item) => item.id === id).idGogoDub,
+      idZoro: incorrectDataID().find((item) => item.id === id).idZoro,
+      id9anime: incorrectDataID().find((item) => item.id === id).id9anime,
+      idPahe: incorrectDataID().find((item) => item.id === id).idPahe,
+    };
+  }
+
   return {
     idGogo,
     idGogoDub,
@@ -128,7 +120,7 @@ const AnimeInfo = async (id) => {
       idprovider = null;
       isDub = false;
     } else {
-      idprovider = await getIDeachProvider(masdata);
+      idprovider = await getIDeachProvider(masdata, id);
       if (masdata.Sites?.Gogoanime) {
         if (JSON.stringify(masdata.Sites.Gogoanime).includes("dub")) {
           isDub = true;

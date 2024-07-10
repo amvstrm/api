@@ -16,6 +16,7 @@ module.exports = {
     "operator-linebreak": "off",
     "consistent-return": "off",
     "import/no-extraneous-dependencies": "off",
+    "import/prefer-default-export": "off",
     semi: "off",
     quotes: "off",
     camelcase: 0,

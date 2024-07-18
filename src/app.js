@@ -12,6 +12,20 @@ import { env } from "./utils/env.js";
 
 const app = express();
 
+app.use(
+  cors({
+    origin:
+      env.data.BLOCK_WITH_CORS === "true" && env.data.ALLOWLIST
+        ? env.data.ALLOWLIST.split(",")
+        : "*",
+    exposedHeaders: [
+      "x-amv-trueIP",
+      "x-amv-trueHost",
+      "x-amv-trueUA",
+      "x-amv-info",
+    ],
+  })
+);
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(json());

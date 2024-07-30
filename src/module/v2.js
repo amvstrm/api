@@ -30,7 +30,7 @@ const FetchAnilist = axios.create({
   },
 });
 
-const FetchMappingData = async (id) => {
+const FetchMappingData = async (id, useMalBackup = false) => {
   const malBackupData = await ofetch(
     `https://raw.githubusercontent.com/bal-mackup/mal-backup/master/anilist/anime/${id}.json`,
     {
@@ -52,6 +52,8 @@ const FetchMappingData = async (id) => {
       }
     ).catch((err) => err);
     return malBackupData_2.mappings.malSync;
+  } else if (useMalBackup) {
+    return malBackupData;
   }
 
   return malBackupData;
@@ -111,7 +113,7 @@ const AnimeInfo = async (id) => {
       query,
     });
 
-    const masdata = await FetchMappingData(id);
+    const masdata = await FetchMappingData(id, true);
     let idprovider;
     let isDub = false;
     if (!masdata || masdata === null || masdata === undefined) {

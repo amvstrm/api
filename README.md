@@ -6,11 +6,11 @@ _Our official API is ``api.amvstr.me``_
 
 ## Usage
 
-Our public APIs are hosted on the same free cloud provider and we don't think you should blame us for why the API is unusable. 
+Our public APIs are hosted on the same free cloud provider and you should not blame us for why the API is unusable. 
 
 The public API will only be used for TESTING & APP MODULE (miru-project for example). Self-host your own API if you do high-volume requests. 
 
-All APIs will be rate-limited from 80 to 60 per min, and you must provide a User-agent to use the API. We will block the API that attempted to use our API for a larger amount of requests and log as much as possible. We have the right to do it and I don't want to deal with cloud provider.
+All APIs will be rate-limited from 80 to 60 per minute, and you must provide a user agent to use the API. We will block the API that attempted to use our API for larger requests and log as much as possible. We have the right to do it and I don't want to deal with cloud providers.
 
 ## Deploy
 

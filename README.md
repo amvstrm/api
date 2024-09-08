@@ -4,6 +4,10 @@ amvstrm's API that powered [amvstrm](https://amvstr.me)
 
 _Our official API is ``api.amvstr.me``_
 
+## NOTICE
+
+This API will be deprecated on __1st November 2024__ and we also making some changes that can break the website. Please consider trying the [new API](https://github.com/amvstrm/api-bun) that we have rewritten our code into Typescript and completely switched from Nodejs to Bun and Expressjs to Elysiajs. We are done with the JS code and the express frameworks.
+
 ## Usage
 
 Our public APIs are hosted on the same free cloud provider and you should not blame us for why the API is unusable. 

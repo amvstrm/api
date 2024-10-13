@@ -7,13 +7,16 @@ import {
   SearchQ,
   RecommendationsQuery as SimilarAnimeQuery,
   SortedAnimeQuery,
+  SeasonQuery,
 } from "../utils/aniquery";
 import { AnimeInfo, AnimeResult } from "../types/v2";
-import { incorrectDataID } from "../utils/incorrectData";
+// import { incorrectDataID } from "../utils/customProvider";
 import { IDProvider } from "../types";
+import { env } from "../utils/env";
+import { SeasonList } from "../types/v1";
 
 const FetchAnilist = axios.create({
-  baseURL: "https://graphql.anilist.co",
+  baseURL: env.ANILIST_PROXY,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -30,36 +33,34 @@ const FetchMappingData = async (id: number, useMalsync: boolean) => {
   ).catch((err) => err);
 
   if (
+    useMalsync === true ||
     malBackupData === "404 Not Found" ||
     malBackupData.statusCode === 404 ||
     Object.keys(malBackupData.Sites).length === 0 ||
     malBackupData.Sites.Gogoanime === undefined
   ) {
     const malBackupData_2 = await ofetch(
-      `https://api-mappings.madara.live/anime/${id}`,
-      {
-        cache: "force-cache",
-      }
-    ).catch((err) => err);
-    return malBackupData_2.mappings.malSync;
-  }
-
-  if (useMalsync === true) {
-    const malBackupData_3 = await ofetch(
-      `https://reverseproxy.adgstudios.co.za/?url=https://api.malsync.moe/mal/anime/anilist:${id}`,
+      `${env.PROXY_URL}https://api.malsync.moe/mal/anime/anilist:${id}`,
       {
         cache: "force-cache",
         responseType: "json",
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+        },
       }
     );
 
-    return malBackupData_3;
+    return malBackupData_2;
   }
 
   return malBackupData;
 };
 
-const getIDeachProvider = async (json: any, id: number): Promise<IDProvider> => {
+const getIDeachProvider = async (
+  json: any,
+  id: number
+): Promise<IDProvider> => {
   let idGogo = "";
   let idGogoDub = "";
   let idZoro = "";
@@ -71,7 +72,9 @@ const getIDeachProvider = async (json: any, id: number): Promise<IDProvider> => 
     for (const animeId in animeInfo) {
       const anime = animeInfo[animeId];
       if (animePage === "Gogoanime") {
+        // @ts-ignore
         idGogo = Object.values(json.Sites[animePage])[0]?.identifier || "";
+        // @ts-ignore
         idGogoDub = Object.values(json.Sites[animePage])[1]?.identifier || "";
       } else if (animePage === "Zoro") {
         idZoro = new URL(anime.url).pathname.replace("/", "");
@@ -83,16 +86,16 @@ const getIDeachProvider = async (json: any, id: number): Promise<IDProvider> => 
     }
   }
 
-  if (incorrectDataID().find((item) => item.id === id)) {
-    return {
-      id: id,
-      idGogo: incorrectDataID().find((item) => item.id === id).idGogo,
-      idGogoDub: incorrectDataID().find((item) => item.id === id).idGogoDub,
-      idZoro: incorrectDataID().find((item) => item.id === id).idZoro,
-      id9anime: incorrectDataID().find((item) => item.id === id).id9anime,
-      idPahe: incorrectDataID().find((item) => item.id === id).idPahe,
-    };
-  }
+  // if (incorrectDataID().find((item) => item.id === id)) {
+  //   return {
+  //     id: id,
+  //     idGogo: incorrectDataID().find((item) => item.id === id).idGogo,
+  //     idGogoDub: incorrectDataID().find((item) => item.id === id).idGogoDub,
+  //     idZoro: incorrectDataID().find((item) => item.id === id).idZoro,
+  //     id9anime: incorrectDataID().find((item) => item.id === id).id9anime,
+  //     idPahe: incorrectDataID().find((item) => item.id === id).idPahe,
+  //   };
+  // }
 
   return {
     id,
@@ -104,7 +107,7 @@ const getIDeachProvider = async (json: any, id: number): Promise<IDProvider> => 
   };
 };
 
-const AnimeInfo = async (id: number): Promise<AnimeInfo> => {
+const AnimeInfo = async (id: number, useMalsync: boolean = true): Promise<AnimeInfo> => {
   const query = InfoQuery(id);
   try {
     const { data }: AxiosResponse<{ data: { Media: any } }> =
@@ -112,7 +115,7 @@ const AnimeInfo = async (id: number): Promise<AnimeInfo> => {
         query,
       });
 
-    const masdata = await FetchMappingData(id, true);
+    const masdata = await FetchMappingData(id, useMalsync);
     let idprovider: IDProvider;
     let isDub = false;
     if (!masdata || masdata === null || masdata === undefined) {
@@ -368,10 +371,43 @@ const Popular = async (p: number, limit: number): Promise<AnimeResult> => {
   }
 };
 
+const Season = async (
+  season: SeasonList,
+  year: number,
+  page: number,
+  limit: number
+): Promise<AnimeResult> => {
+  try {
+    const { data }: AxiosResponse<{ data: { Page: any } }> =
+      await FetchAnilist.post("", {
+        query: SeasonQuery(),
+        variables: {
+          season,
+          year,
+          page,
+          limit,
+        },
+      });
+    return {
+      pageInfo: data.data.Page.pageInfo,
+      results: data.data.Page.media,
+    };
+  } catch (err: any) {
+    if (err.response) {
+      return {
+        code: err.response.status,
+        message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,
+      } as any;
+    }
+    throw err;
+  }
+};
+
 export default {
   AnimeInfo,
   AnimeSearch,
   AnimeAdvancedSearch,
+  Season,
   SimilarAnime,
   AniSkipData,
   Trending,

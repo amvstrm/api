@@ -1,5 +1,5 @@
 interface AnimeInfo {
-  error: any;
+  error?: any | null;
   id: number;
   idMal: number;
   id_provider: {

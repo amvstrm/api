@@ -40,6 +40,10 @@ yarn-error.log*
 **/*.tgz
 **/*.log
 package-lock.json
+<<<<<<< HEAD
 **/*.bun
 
 backup
+=======
+**/*.bun
+>>>>>>> f62cdb6a6ce588fc1ad3602ebd5b554b0805907b

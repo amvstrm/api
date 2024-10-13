@@ -289,3 +289,58 @@ query($sort: [MediaSort], $page: Int = 1, $perPage: Int = 20) {
     }
   }
 }`;
+
+export const SeasonQuery = () => `
+  query ($season: MediaSeason!, $year: Int!, $page: Int = 1, $limit: Int = 20) {
+    Page (page: $page, perPage: $limit) {
+      pageInfo { 
+        total 
+        perPage 
+        currentPage 
+        lastPage 
+        hasNextPage 
+      } 
+      media (season: $season, seasonYear: $year) {
+        id
+        idMal
+        status(version: 2)
+        title {
+          userPreferred
+          romaji
+          english
+          native
+        }
+        genres
+        tags {
+          id
+          name
+        }
+        trailer {
+          id
+          site
+          thumbnail
+        }
+        description
+        format
+        bannerImage
+        coverImage {
+          extraLarge
+          large
+          medium
+          color
+        }
+        episodes
+        meanScore
+        duration
+        season
+        seasonYear
+        averageScore
+        nextAiringEpisode {
+          airingAt
+          timeUntilAiring
+          episode
+        }
+      }
+    } 
+  }
+`;

@@ -12,7 +12,7 @@ import httpStatus from "http-status";
 
 import { extract } from "../utils/gogostream";
 
-const BASE_URL = "https://anitaku.to/";
+const BASE_URL = "https://anitaku.pe/";
 const ajax_url = "https://ajax.gogocdn.net/";
 const popular_ongoing_url = `${ajax_url}ajax/page-recent-release-ongoing.html`;
 const recent_release_url = `${ajax_url}ajax/page-recent-release.html`;
@@ -76,7 +76,7 @@ const season = async (season: SeasonList, page: number) => {
   try {
     const list: Result[] = [];
     const season_page = await axios.get(
-      `${BASE_URL}sub-category/${season}?page=${page}`
+      `${BASE_URL}sub-category/${season}?page=${page}`,
     );
     const $ = load(season_page.data);
 
@@ -173,7 +173,7 @@ const topair = async (page = 1) => {
             .attr("style")
             ?.match("(https?://.*.(?:png|jpg|jpeg|webp))")?.[0] ?? "",
         latestEp:
-          parseInt($(el).find("p:nth-child(4) > a").text().trim()) ?? "",
+          parseInt($(el).find("p:nth-child(4) > a").text().trim()) ?? 0,
         genres,
         released: null,
         status: null,

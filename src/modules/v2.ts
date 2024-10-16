@@ -272,7 +272,7 @@ const AniSkipData = async (
     ];
     const ani_id = (await FetchMappingData(id as number, true)).malId;
     console.log(source, id, ep_id);
-    console.log(`${url[1]}?id=${id}&episode=${ep_id}`);
+    console.log(`${url[0]}?id=${id}&episode=${ep_id}`);
     if (source === "1") {
       const { data } = await axios.get(
         `${url[0]}/skip-times/${ani_id}/${ep_id}?types[]=ed&types[]=mixed-ed&types[]=mixed-op&types[]=op&types[]=recap&episodeLength=`

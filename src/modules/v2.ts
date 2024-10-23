@@ -9,8 +9,12 @@ import {
   SortedAnimeQuery,
   SeasonQuery,
 } from "../utils/aniquery";
-import { AnimeInfo, AnimeResult } from "../types/v2";
-// import { incorrectDataID } from "../utils/customProvider";
+import {
+  AnimeInfo,
+  AnimeRecommendationData,
+  AnimeResult,
+  RecommendationsType,
+} from "../types/v2";
 import { IDProvider } from "../types";
 import { env } from "../utils/env";
 import { SeasonList } from "../types/v1";
@@ -86,17 +90,6 @@ const getIDeachProvider = async (
     }
   }
 
-  // if (incorrectDataID().find((item) => item.id === id)) {
-  //   return {
-  //     id: id,
-  //     idGogo: incorrectDataID().find((item) => item.id === id).idGogo,
-  //     idGogoDub: incorrectDataID().find((item) => item.id === id).idGogoDub,
-  //     idZoro: incorrectDataID().find((item) => item.id === id).idZoro,
-  //     id9anime: incorrectDataID().find((item) => item.id === id).id9anime,
-  //     idPahe: incorrectDataID().find((item) => item.id === id).idPahe,
-  //   };
-  // }
-
   return {
     id,
     idGogo,
@@ -107,7 +100,10 @@ const getIDeachProvider = async (
   };
 };
 
-const AnimeInfo = async (id: number, useMalsync: boolean = true): Promise<AnimeInfo> => {
+const AnimeInfo = async (
+  id: number,
+  useMalsync: boolean = true
+): Promise<AnimeInfo> => {
   const query = InfoQuery(id);
   try {
     const { data }: AxiosResponse<{ data: { Media: any } }> =
@@ -234,20 +230,21 @@ const SimilarAnime = async (
   id: number,
   page: number,
   limit: number
-): Promise<AnimeResult> => {
-  const querys = SimilarAnimeQuery(id, page, limit);
+): Promise<AnimeRecommendationData> => {
+  const querys = SimilarAnimeQuery(id, page = 1, limit = 12);
   try {
-    const { data }: AxiosResponse<{ data: { Page: any } }> =
+    const { data }: AxiosResponse<{ data: RecommendationsType }> =
       await FetchAnilist.post("", {
         query: querys,
-        variables: {
-          id: id,
-          page: page,
-        },
       });
+    const recommendations = data.data.Media.recommendations.nodes;
     return {
-      pageInfo: data.data.Page.pageInfo,
-      results: data.data.Page.media,
+      info: {
+        id: data.data.Media.id,
+        idMal: data.data.Media.idMal,
+        title: data.data.Media.title,
+      },
+      results: recommendations.map((node: any) => node.mediaRecommendation),
     };
   } catch (err: any) {
     if (err.response) {
@@ -272,7 +269,7 @@ const AniSkipData = async (
     ];
     const ani_id = (await FetchMappingData(id as number, true)).malId;
     console.log(source, id, ep_id);
-    console.log(`${url[1]}?id=${id}&episode=${ep_id}`);
+    console.log(`${url[0]}?id=${id}&episode=${ep_id}`);
     if (source === "1") {
       const { data } = await axios.get(
         `${url[0]}/skip-times/${ani_id}/${ep_id}?types[]=ed&types[]=mixed-ed&types[]=mixed-op&types[]=op&types[]=recap&episodeLength=`
@@ -304,7 +301,6 @@ const AniSkipData = async (
           };
     }
   } catch (err) {
-    console.log(err.response.data);
     if (err.response) {
       return {
         code: err.response.status,

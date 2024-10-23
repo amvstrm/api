@@ -5,6 +5,7 @@ import v2 from "../modules/v2";
 import { extract } from "../utils/gogostream";
 import { base64encode } from "../utils/base64";
 import { SeasonList } from "../types/v1";
+import { env } from "../utils/env";
 
 const meta = new META.Anilist();
 
@@ -13,12 +14,16 @@ export const v2Routes = (app: Elysia) => {
     app
       .get(
         "/info/:id",
-        async ({ params, set }) => {
+        async ({ params, query, set }) => {
           try {
-            const data = await v2.AnimeInfo(parseInt(params.id));
+            const data = await v2.AnimeInfo(
+              parseInt(params.id),
+              env.PROXY_URL === "" || env.PROXY_URL === null
+                ? Boolean(query.msync_src)
+                : false
+            );
             return { code: 200, message: "success", ...data };
           } catch (error) {
-            console.log(error);
             set.status = error.code || 500;
             return error;
           }
@@ -27,6 +32,11 @@ export const v2Routes = (app: Elysia) => {
           params: t.Object({
             id: t.String({ description: "Anilist anime id" }),
           }),
+          query: t.Object({
+            msync_src: t.Optional(
+              t.Boolean({ description: "Use malsync source" })
+            ),
+          }),
           tags: ["v2"],
         }
       )
@@ -34,15 +44,15 @@ export const v2Routes = (app: Elysia) => {
         "/recommendations/:id",
         async ({ params, query, set }) => {
           try {
-            const { pageInfo, results } = await v2.SimilarAnime(
+            const results = await v2.SimilarAnime(
               parseInt(params.id),
               parseInt(query.page),
               parseInt(query.limit)
             );
-            return { status: 200, message: "success", info: pageInfo, results };
+            return { code: 200, message: "success", ...results };
           } catch (error) {
-            set.status = 500;
-            return { code: 500, message: "error", data: error };
+            set.status = error.code || 500;
+            return { code: error.code || 500, message: "error", data: error };
           }
         },
         {
@@ -118,13 +128,13 @@ export const v2Routes = (app: Elysia) => {
       )
       .get(
         "/season/:season/:year",
-        async ({ query, set }) => {
+        async ({ params, query, set }) => {
           try {
             const data = await v2.Season(
-              query.season.toLocaleUpperCase() as SeasonList,
-              parseInt(query.year),
-              parseInt(query.p) ? parseInt(query.p) : 1,
-              parseInt(query.limit) ? parseInt(query.limit) : 20
+              params.season.toLocaleUpperCase() as SeasonList,
+              parseInt(params.year),
+              parseInt(query.p) ?? 1,
+              parseInt(query.limit) ?? 20
             );
             return {
               code: 200,
@@ -138,7 +148,7 @@ export const v2Routes = (app: Elysia) => {
           }
         },
         {
-          query: t.Object({
+          params: t.Object({
             season: t.Enum({
               WINTER: "winter",
               SPRING: "spring",
@@ -146,6 +156,8 @@ export const v2Routes = (app: Elysia) => {
               FALL: "fall",
             }),
             year: t.String({ description: "Year of the season" }),
+          }),
+          query: t.Object({
             p: t.Optional(t.String({ description: "Page number" })),
             limit: t.Optional(
               t.String({ description: "Number of results per page" })
@@ -154,36 +166,44 @@ export const v2Routes = (app: Elysia) => {
           tags: ["v2"],
         }
       )
-      .get("/episodes/:id", async ({ params, query, set }) => {
-        try {
-          const data = await meta.fetchEpisodesListById(
-            params.id,
-            Boolean(query.dub),
-            Boolean(query.getFiller)
-          );
-          return {
-            code: 200,
-            message: "success",
-            results: data,
-          };
-        } catch (error) {
-          set.status = 500;
-          return {
-            code: 500,
-            message: "error",
-            data: error,
-          };
+      .get(
+        "/episodes/:id",
+        async ({ params, query, set }) => {
+          try {
+            const data = await meta.fetchEpisodesListById(
+              params.id,
+              Boolean(query.dub),
+              Boolean(query.getFiller)
+            );
+            return {
+              code: 200,
+              message: "success",
+              results: data,
+            };
+          } catch (error) {
+            set.status = 500;
+            return {
+              code: 500,
+              message: "error",
+              data: error,
+            };
+          }
+        },
+        {
+          params: t.Object({
+            id: t.String({ description: "Anilist id" }),
+          }),
+          query: t.Object({
+            dub: t.Optional(
+              t.Boolean({ description: "Get dub episodes", default: false })
+            ),
+            getFiller: t.Optional(
+              t.Boolean({ description: "Get filler episodes", default: false })
+            ),
+          }),
+          tags: ["v2"],
         }
-      }, {
-        params: t.Object({
-          id: t.String({ description: "Anilist id" }),
-        }),
-        query: t.Object({
-          dub: t.Optional(t.Boolean({ description: "Get dub episodes", default: false })),
-          getFiller: t.Optional(t.Boolean({ description: "Get filler episodes", default: false })),
-        }),
-        tags: ["v2"], 
-      })
+      )
       .get(
         "/stream/:id/:ep",
         async ({ params: { id, ep }, set }) => {

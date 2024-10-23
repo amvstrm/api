@@ -1,4 +1,4 @@
-interface AnimeInfo {
+export interface AnimeInfo {
   error?: any | null;
   id: number;
   idMal: number;
@@ -40,17 +40,59 @@ interface AnimeInfo {
   relation: any[];
 }
 
-interface PageInfo {
+export interface PageInfo {
   hasNextPage: boolean;
   total: number;
 }
 
-interface AnimeSearchData {
+export interface AnimeSearchData {
   pageInfo: PageInfo;
   results: any[];
 }
-
-interface AnimeResult {
+export interface AnimeRecommendationData {
+  info: {
+    id: number;
+    idMal: number;
+    title: {
+      romaji: string;
+      english: string;
+      native: string;
+      userPreferred: string;
+    };
+  };
+  results: {
+    id: number;
+    idMal: number;
+    title: {
+      romaji: string;
+      english: string;
+      native: string;
+      userPreferred: string;
+    };
+    coverImage: {
+      large: string;
+      medium: string;
+      color: string;
+    };
+    bannerImage: string;
+    genres: string[];
+    tags: {
+      id: string;
+      name: string;
+    }[];
+    type: string;
+    format: string;
+    status: string;
+    episodes: string;
+    duration: string;
+    averageScore: number;
+    duration: number;
+    season: string;
+  }[];
+}
+export interface AnimeResult {
+  code?: number;
+  message?: string;
   pageInfo: PageInfo;
   results: {
     id: string;
@@ -86,26 +128,68 @@ interface AnimeResult {
   }[];
 }
 
+export interface RecommendationsType {
+  Media: {
+    id: number;
+    idMal: number;
+    title: {
+      romaji: string;
+      english: string;
+      native: string;
+      userPreferred: string;
+    };
+    recommendations: {
+      nodes: {
+        mediaRecommendation: {
+          id: number;
+          idMal: number;
+          title: {
+            romaji: string;
+            english: string;
+            native: string;
+            userPreferred: string;
+          };
+          coverImage: {
+            large: string;
+            medium: string;
+            color: string;
+          };
+          bannerImage: string;
+          genres: string[];
+          tags: {
+            id: string;
+            name: string;
+          }[];
+          type: string;
+          format: string;
+          status: string;
+          episodes: string;
+          duration: string;
+          averageScore: number;
+          duration: number;
+          season: string;
+        };
+      }[];
+    };
+  };
+}
+
 export interface AniSkipDataResult {
   code: number;
   message: string;
   found: boolean;
-  results: Results;
-}
-
-export interface Results {
-  op: OPEDdata;
-  ed: OPEDdata;
+  results: {
+    op: OPEDdata;
+    ed: OPEDdata;
+  };
 }
 
 export interface OPEDdata {
-  interval: Interval;
+  interval: {
+    startTime: number;
+    endTime: number;
+  };
   skipType: string;
   skipId: string;
   episodeLength: number;
-}
-
-export interface Interval {
-  startTime: number;
-  endTime: number;
 }

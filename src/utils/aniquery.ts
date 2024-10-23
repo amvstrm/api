@@ -145,7 +145,7 @@ export const RecommendationsQuery = (
   limit: number
 ) => `
 query Query {
-  Media(id: ${id}, type: MediaType = ANIME) {
+  Media(id: ${id}, type: ANIME) {
     id
     idMal
     title {

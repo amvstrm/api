@@ -9,7 +9,7 @@ You need to have Bun installed on your computer. If you don't have it, install i
 After that clone our API from the bun branch repository, install the dependencies, and run the app.
 
 ```bash
-bun run dev
+bun run dev 
 ```
 
 ## Docs

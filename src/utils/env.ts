@@ -7,7 +7,6 @@ const envVariables = z.object({
   BLOCK_WITH_CORS: z.preprocess(Boolean, z.boolean()).default(false),
   RATE_LIMIT: z.string().default("80"),
   RATE_LIMIT_DURATION: z.string().default("60000"),
-  SET_GLOBAL_CACHE: z.string().default("30 minutes"),
   PROXY_URL: z.string().default(""),
   GOGOANIME_PROXY: z.string().default("https://anitaku.pe"),
   ANILIST_PROXY: z.string().default("https://graphql.anilist.co"),

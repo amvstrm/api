@@ -52,7 +52,7 @@ export const v2Routes = (app: Elysia) => {
             return { code: 200, message: "success", ...results };
           } catch (error) {
             set.status = error.code || 500;
-            return { code: error.code || 500, message: "error", data: error };
+            return error;
           }
         },
         {
@@ -83,8 +83,8 @@ export const v2Routes = (app: Elysia) => {
               results: data.results,
             };
           } catch (error) {
-            set.status = 500;
-            return { code: 500, message: "error", data: error };
+            set.status = error.code || 500;
+            return error;
           }
         },
         {
@@ -112,8 +112,8 @@ export const v2Routes = (app: Elysia) => {
               results: data.results,
             };
           } catch (error) {
-            set.status = 500;
-            return { code: 500, message: "error", data: error };
+            set.status = error.code || 500;
+            return error;
           }
         },
         {
@@ -143,8 +143,8 @@ export const v2Routes = (app: Elysia) => {
               results: data.results,
             };
           } catch (error) {
-            set.status = 500;
-            return { code: 500, message: "error", data: error };
+            set.status = error.code || 500;
+            return error;
           }
         },
         {
@@ -268,7 +268,7 @@ export const v2Routes = (app: Elysia) => {
                     },
             };
           } catch (error) {
-            set.status = 500;
+            set.status = error.code || 500;
             return {
               code: 500,
               message: "error",
@@ -285,37 +285,22 @@ export const v2Routes = (app: Elysia) => {
       )
       .get(
         "/stream/skiptimes/:id/:ep",
-        async ({ params, query, set }) => {
+        async ({ params, set }) => {
           try {
-            const data = await v2.AniSkipData(
-              params.id,
-              params.ep,
-              query.source as "1" | "2"
-            );
+            const data = await v2.AniSkipData(params.id, params.ep);
             return {
               code: 200,
               results: data,
             };
           } catch (error) {
-            set.status = 500;
-            return {
-              code: 500,
-              message: "error",
-            };
+            set.status = error.code || 500;
+            return error;
           }
         },
         {
           params: t.Object({
             id: t.String({ description: "Anilist id" }),
             ep: t.String({ description: "Episode number" }),
-          }),
-          query: t.Object({
-            source: t.Optional(
-              t.String({
-                description: "Source provider (Aniskip & Zoro)",
-                default: "1",
-              })
-            ),
           }),
           tags: ["v2"],
         }
@@ -336,8 +321,8 @@ export const v2Routes = (app: Elysia) => {
               results: data.results,
             };
           } catch (error) {
-            set.status = 500;
-            return { code: 500, message: "error", data: error };
+            set.status = error.code || 500;
+            return error;
           }
         },
         {
@@ -363,8 +348,8 @@ export const v2Routes = (app: Elysia) => {
               results: data.results,
             };
           } catch (error) {
-            set.status = 500;
-            return { code: 500, message: "error", data: error };
+            set.status = error.code || 500;
+            return error;
           }
         },
         {

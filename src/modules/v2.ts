@@ -231,7 +231,7 @@ const SimilarAnime = async (
   page: number,
   limit: number
 ): Promise<AnimeRecommendationData> => {
-  const querys = SimilarAnimeQuery(id, page = 1, limit = 12);
+  const querys = SimilarAnimeQuery(id, (page = 1), (limit = 12));
   try {
     const { data }: AxiosResponse<{ data: RecommendationsType }> =
       await FetchAnilist.post("", {
@@ -257,49 +257,23 @@ const SimilarAnime = async (
   }
 };
 
-const AniSkipData = async (
-  id: number | string,
-  ep_id: number | string,
-  source: "1" | "2" = "1"
-) => {
+const AniSkipData = async (id: number | string, ep_id: number | string) => {
   try {
-    const url = [
-      "https://api.aniskip.com/v2",
-      "https://aniskip.saanservers.com/skiptimes",
-    ];
+    const url = "https://api.aniskip.com/v2";
     const ani_id = (await FetchMappingData(id as number, true)).malId;
-    console.log(source, id, ep_id);
-    console.log(`${url[0]}?id=${id}&episode=${ep_id}`);
-    if (source === "1") {
-      const { data } = await axios.get(
-        `${url[0]}/skip-times/${ani_id}/${ep_id}?types[]=ed&types[]=mixed-ed&types[]=mixed-op&types[]=op&types[]=recap&episodeLength=`
-      );
-      return data.results
-        ? {
-            op: data.results.find((item: any) => item.skipType === "op")
-              .interval,
-            ed: data.results.find((item: any) => item.skipType === "ed")
-              .interval,
-          }
-        : {
-            op: null,
-            ed: null,
-          };
-    } else if (source === "2") {
-      const { data } = await axios.get(`${url[1]}?id=${id}&episode=${ep_id}`);
 
-      return data.length > 0 ||
-        data !== "404 Not Found" ||
-        data !== "Anime not found"
-        ? {
-            op: data.find((item: any) => item.text === "Intro"),
-            ed: data.find((item: any) => item.text === "Outro"),
-          }
-        : {
-            op: null,
-            ed: null,
-          };
-    }
+    const { data } = await axios.get(
+      `${url}/skip-times/${ani_id}/${ep_id}?types[]=ed&types[]=mixed-ed&types[]=mixed-op&types[]=op&types[]=recap&episodeLength=`
+    );
+    return data.results
+      ? {
+          op: data.results.find((item: any) => item.skipType === "op"),
+          ed: data.results.find((item: any) => item.skipType === "ed"),
+        }
+      : {
+          op: null,
+          ed: null,
+        };
   } catch (err) {
     if (err.response) {
       return {

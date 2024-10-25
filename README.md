@@ -12,6 +12,14 @@ After that clone our API from the bun branch repository, install the dependencie
 bun run dev
 ```
 
+## Docker
+
+We need help for dockerfile configuration, so if you want to use this API in docker, you can help us creating dockerfile by creating a new pull request.
+
 ## Docs
 
 For documentation, you can go to the ``/swagger`` route.
+
+## License
+
+This project is licensed under the GPL-3.0 license - see the [LICENSE](LICENSE) file for details.

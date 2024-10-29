@@ -38,6 +38,9 @@ export const v2Routes = (app: Elysia) => {
             ),
           }),
           tags: ["v2"],
+          detail: {
+            description: "Get anime info from Anilist with provider",
+          }
         }
       )
       .get(
@@ -66,6 +69,9 @@ export const v2Routes = (app: Elysia) => {
             ),
           }),
           tags: ["v2"],
+          detail: {
+            description: "Get similar anime from Anilist",
+          }
         }
       )
       .get(
@@ -95,6 +101,9 @@ export const v2Routes = (app: Elysia) => {
             ),
           }),
           tags: ["v2"],
+          detail: {
+            description: "Get trending anime from Anilist",
+          }
         }
       )
       .get(
@@ -124,6 +133,9 @@ export const v2Routes = (app: Elysia) => {
             ),
           }),
           tags: ["v2"],
+          detail: {
+            description: "Get popular anime from Anilist",
+          }
         }
       )
       .get(
@@ -164,6 +176,9 @@ export const v2Routes = (app: Elysia) => {
             ),
           }),
           tags: ["v2"],
+          detail: {
+            description: "Get seasonal anime from Anilist",
+          }
         }
       )
       .get(
@@ -202,6 +217,9 @@ export const v2Routes = (app: Elysia) => {
             ),
           }),
           tags: ["v2"],
+          detail: {
+            description: "Get gogoanime episode list with Anilist ID",
+          }
         }
       )
       .get(
@@ -270,8 +288,8 @@ export const v2Routes = (app: Elysia) => {
           } catch (error) {
             set.status = error.code || 500;
             return {
-              code: 500,
-              message: "error",
+              code: error.code || 500,
+              message: error.message || "error",
             };
           }
         },
@@ -281,6 +299,9 @@ export const v2Routes = (app: Elysia) => {
             ep: t.String({ description: "Episode number" }),
           }),
           tags: ["v2"],
+          detail: {
+            description: "Get gogoanime's stream link from gogoanime's ID and episode number",
+          }
         }
       )
       .get(
@@ -303,6 +324,9 @@ export const v2Routes = (app: Elysia) => {
             ep: t.String({ description: "Episode number" }),
           }),
           tags: ["v2"],
+          detail: {
+            description: "Get Aniskip data with Anilist ID and episode number",
+          }
         }
       )
       .get(
@@ -334,6 +358,9 @@ export const v2Routes = (app: Elysia) => {
             ),
           }),
           tags: ["v2"],
+          detail: {
+            description: "Query anime with Anilist",
+          }
         }
       )
       .post(
@@ -403,31 +430,12 @@ export const v2Routes = (app: Elysia) => {
             source: t.Optional(t.String({ default: undefined })),
             season: t.Optional(t.String({ default: undefined })),
             seasonYear: t.Optional(t.Number({ default: undefined })),
-            year: t.Optional(t.String({ default: undefined })),
-            onList: t.Optional(t.Boolean({ default: undefined })),
-            yearLesser: t.Optional(t.Number({ default: undefined })),
-            yearGreater: t.Optional(t.Number({ default: undefined })),
-            episodeLesser: t.Optional(t.Number({ default: undefined })),
-            episodeGreater: t.Optional(t.Number({ default: undefined })),
-            durationLesser: t.Optional(t.Number({ default: undefined })),
-            durationGreater: t.Optional(t.Number({ default: undefined })),
-            chapterLesser: t.Optional(t.Number({ default: undefined })),
-            chapterGreater: t.Optional(t.Number({ default: undefined })),
-            volumeLesser: t.Optional(t.Number({ default: undefined })),
-            volumeGreater: t.Optional(t.Number({ default: undefined })),
-            licensedBy: t.Optional(
-              t.Array(t.String({ default: undefined }), { default: undefined })
-            ),
-            isLicensed: t.Optional(t.Boolean({ default: undefined })),
-            excludedGenres: t.Optional(
-              t.Array(t.String({ default: undefined }), { default: undefined })
-            ),
-            excludedTags: t.Optional(
-              t.Array(t.String({ default: undefined }), { default: undefined })
-            ),
-            minimumTagRank: t.Optional(t.Number({ default: undefined })),
+            year: t.Optional(t.String({ default: undefined })), 
           }),
           tags: ["v2"],
+          detail: {
+            description: "Search anime with Anilist with advanced search",
+          }
         }
       )
   );

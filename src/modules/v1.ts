@@ -11,6 +11,8 @@ import { load } from "cheerio";
 import httpStatus from "http-status";
 
 import { extract } from "../utils/gogostream";
+import { getGogoCookie } from "../utils/gogoauth";
+import { env } from "../utils/env";
 
 const BASE_URL = "https://anitaku.pe/";
 const ajax_url = "https://ajax.gogocdn.net/";
@@ -72,11 +74,11 @@ const genres_list = [
 
 axios.defaults.headers.common["Accept-Encoding"] = "gzip";
 
-const season = async (season: SeasonList, page: number) => {
+const season = async (season: SeasonList, year: number, page: number) => {
   try {
     const list: Result[] = [];
     const season_page = await axios.get(
-      `${BASE_URL}sub-category/${season}?page=${page}`,
+      `${BASE_URL}sub-category/${season}-${year}-anime?page=${page}`
     );
     const $ = load(season_page.data);
 
@@ -172,8 +174,7 @@ const topair = async (page = 1) => {
             .find("a:nth-child(1) > div")
             .attr("style")
             ?.match("(https?://.*.(?:png|jpg|jpeg|webp))")?.[0] ?? "",
-        latestEp:
-          parseInt($(el).find("p:nth-child(4) > a").text().trim()) ?? 0,
+        latestEp: parseInt($(el).find("p:nth-child(4) > a").text().trim()) ?? 0,
         genres,
         released: null,
         status: null,
@@ -299,7 +300,7 @@ const newSeasons = async (page = 1) => {
   }
 };
 
-const movies = async (_aphab: string, page = 1) => {
+const movies = async (_aphab: string, page: number = 1) => {
   try {
     const list: any[] = [];
     const moviepg = await axios.get(
@@ -546,6 +547,47 @@ const getStream = async (id: string, ep: string) => {
   }
 };
 
+const getDownloadLinks = async (id: string) => {
+  try {
+    let res = {
+      downloadLink: "",
+      raw: [],
+    };
+    let resol = {};
+    const { data } = await axios.get(`${BASE_URL}${id}`, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Linux; Android 9; vivo 1916) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Mobile Safari/537.36",
+        Cookie: `auth=${await getGogoCookie()};`,
+      },
+    });
+    const $ = load(data);
+    $("div#wrapper_bg").each((_index, element) => {
+      const $element = $(element);
+      const download = $element
+        .find(
+          "div.anime_video_body div.anime_video_body_cate div.favorites_book ul li a"
+        )
+        .attr("href");
+      res.downloadLink = download;
+    });
+    const links = $("div.cf-download").find("a");
+    links.each((i, link) => {
+      const a = $(link);
+      resol[a.text().trim()] = a.attr("href").trim();
+    });
+
+    res.raw = Object.entries(resol).map(([resolution, url]) => ({
+      url,
+      resolution,
+    }));
+
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export default {
   animeInfo,
   season,
@@ -559,4 +601,5 @@ export default {
   search,
   genres,
   getStream,
+  getDownloadLinks,
 };

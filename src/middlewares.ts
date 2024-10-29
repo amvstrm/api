@@ -63,12 +63,13 @@ export function setupMiddleware(app: Elysia) {
     .use(
       swagger({
         autoDarkMode: true,
+        scalarVersion: "1.25.50",
         documentation: {
           info: {
             title: "amvstrm's API",
             description:
               "amvstrm's API is a collection of APIs that provide data from various sources. Please noted that this API is still in beta that missing some of the routes, functions and may be subject to change in the future.",
-            termsOfService: "https://docs.amvstr.me/api/usage",
+            termsOfService: "https://docs.amvstr.me/docs/api/usage",
             version: "3.0.0 Beta",
             contact: {
               name: "amvstrm",
@@ -81,7 +82,7 @@ export function setupMiddleware(app: Elysia) {
             },
           },
           externalDocs: {
-            url: "https://docs.amvstr.me/api/usage",
+            url: "https://docs.amvstr.me/docs/api/usage",
             description: "API Documentation",
           },
           tags: [
@@ -98,7 +99,10 @@ export function setupMiddleware(app: Elysia) {
         },
         scalarConfig: {
           layout: "classic",
-          proxy: "",
+          spec: {
+            url: "/swagger/json",
+          },
+          theme: "deepSpace"
         },
       })
     )
@@ -142,13 +146,12 @@ export function setupMiddleware(app: Elysia) {
         contentSecurityPolicy: {
           useDefaults: true,
           directives: {
-            "script-src": ["'self'", "https://cdn.jsdelivr.net/"],
+            "script-src": ["'self'", "*", "https://cdn.jsdelivr.net"],
           },
         },
       })
     )
     .use(Logestic.preset("fancy"))
-    .use(httpError())
     .use(HttpStatusCode())
     .onError(errorHandler);
 }

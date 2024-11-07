@@ -17,10 +17,7 @@ export const v2Routes = (app: Elysia) => {
         async ({ params, query, set }) => {
           try {
             const data = await v2.AnimeInfo(
-              parseInt(params.id),
-              env.PROXY_URL === "" || env.PROXY_URL === null
-                ? Boolean(query.msync_src)
-                : false
+              parseInt(params.id)
             );
             return { code: 200, message: "success", ...data };
           } catch (error) {
@@ -31,11 +28,6 @@ export const v2Routes = (app: Elysia) => {
         {
           params: t.Object({
             id: t.String({ description: "Anilist anime id" }),
-          }),
-          query: t.Object({
-            msync_src: t.Optional(
-              t.Boolean({ description: "Use malsync source" })
-            ),
           }),
           tags: ["v2"],
           detail: {

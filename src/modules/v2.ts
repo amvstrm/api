@@ -15,9 +15,17 @@ import {
   AnimeResult,
   RecommendationsType,
 } from "../types/v2";
-import { IDProvider } from "../types";
 import { env } from "../utils/env";
 import { SeasonList } from "../types/v1";
+import customProviderData from "../utils/processCustomData";
+
+interface IDProvider {
+  id?: number;
+  idGogo: string;
+  idGogoDub: string;
+  idZoro: string;
+  idPahe: string;
+}
 
 const FetchAnilist = axios.create({
   baseURL: env.ANILIST_PROXY,
@@ -27,7 +35,7 @@ const FetchAnilist = axios.create({
   },
 });
 
-const FetchMappingData = async (id: number, useMalsync: boolean) => {
+const FetchMappingData = async (id: number) => {
   const malBackupData = await ofetch(
     `https://raw.githubusercontent.com/bal-mackup/mal-backup/master/anilist/anime/${id}.json`,
     {
@@ -35,29 +43,6 @@ const FetchMappingData = async (id: number, useMalsync: boolean) => {
       responseType: "json",
     }
   ).catch((err) => err);
-
-  if (
-    useMalsync === true ||
-    malBackupData === "404 Not Found" ||
-    malBackupData.statusCode === 404 ||
-    Object.keys(malBackupData.Sites).length === 0 ||
-    malBackupData.Sites.Gogoanime === undefined
-  ) {
-    const malBackupData_2 = await ofetch(
-      `${env.PROXY_URL}https://api.malsync.moe/mal/anime/anilist:${id}`,
-      {
-        cache: "force-cache",
-        responseType: "json",
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
-        },
-      }
-    );
-
-    return malBackupData_2;
-  }
-
   return malBackupData;
 };
 
@@ -68,7 +53,6 @@ const getIDeachProvider = async (
   let idGogo = "";
   let idGogoDub = "";
   let idZoro = "";
-  let id9anime = "";
   let idPahe = "";
 
   for (const animePage in json.Sites) {
@@ -82,28 +66,34 @@ const getIDeachProvider = async (
         idGogoDub = Object.values(json.Sites[animePage])[1]?.identifier || "";
       } else if (animePage === "Zoro") {
         idZoro = new URL(anime.url).pathname.replace("/", "");
-      } else if (animePage === "9anime") {
-        id9anime = new URL(anime.url).pathname.replace("/watch/", "");
       } else if (animePage === "animepahe") {
         idPahe = anime.identifier;
       }
     }
   }
 
-  return {
-    id,
-    idGogo,
-    idGogoDub,
-    idZoro,
-    id9anime,
-    idPahe,
-  };
+  // Check if the data is available in the customProviderData
+  const customProviderItem = customProviderData.find(
+    (item: any) => item.id === id
+  );
+  if (customProviderItem) {
+    return {
+      idGogo: customProviderItem.idGogo,
+      idGogoDub: customProviderItem.idGogoDub,
+      idZoro: customProviderItem.idZoro,
+      idPahe: customProviderItem.idPahe,
+    };
+  } else {
+    return {
+      idGogo,
+      idGogoDub,
+      idZoro,
+      idPahe,
+    };
+  }
 };
 
-const AnimeInfo = async (
-  id: number,
-  useMalsync: boolean = true
-): Promise<AnimeInfo> => {
+const AnimeInfo = async (id: number): Promise<AnimeInfo> => {
   const query = InfoQuery(id);
   try {
     const { data }: AxiosResponse<{ data: { Media: any } }> =
@@ -111,23 +101,20 @@ const AnimeInfo = async (
         query,
       });
 
-    const masdata = await FetchMappingData(id, useMalsync);
+    const malsyn_data = await FetchMappingData(id);
     let idprovider: IDProvider;
     let isDub = false;
-    if (!masdata || masdata === null || masdata === undefined) {
+
+    if (!malsyn_data || malsyn_data === null || malsyn_data === undefined) {
       idprovider = null;
-    } else if (!masdata.Sites?.Gogoanime) {
-      idprovider = null;
-      isDub = false;
     } else {
-      idprovider = await getIDeachProvider(masdata, id);
-      if (masdata.Sites?.Gogoanime) {
-        if (JSON.stringify(masdata.Sites.Gogoanime).includes("dub")) {
+      idprovider = await getIDeachProvider(malsyn_data, id);
+      if (malsyn_data.Sites?.Gogoanime) {
+        if (JSON.stringify(malsyn_data.Sites.Gogoanime).includes("dub")) {
           isDub = true;
         }
       }
     }
-
     const relations = data.data.Media.relations.edges.map((node: any) => {
       return node.node;
     });
@@ -260,7 +247,7 @@ const SimilarAnime = async (
 const AniSkipData = async (id: number | string, ep_id: number | string) => {
   try {
     const url = "https://api.aniskip.com/v2";
-    const ani_id = (await FetchMappingData(id as number, true)).malId;
+    const ani_id = (await FetchMappingData(id as number)).malId;
 
     const { data } = await axios.get(
       `${url}/skip-times/${ani_id}/${ep_id}?types[]=ed&types[]=mixed-ed&types[]=mixed-op&types[]=op&types[]=recap&episodeLength=`

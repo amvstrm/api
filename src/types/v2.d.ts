@@ -6,7 +6,6 @@ export interface AnimeInfo {
     idGogo: string;
     idGogoDub: string;
     idZoro: string;
-    id9anime: string;
     idPahe: string;
   };
   title: string;

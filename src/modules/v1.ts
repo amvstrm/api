@@ -14,7 +14,7 @@ import { extract } from "../utils/gogostream";
 import { getGogoCookie } from "../utils/gogoauth";
 import { env } from "../utils/env";
 
-const BASE_URL = "https://anitaku.pe/";
+const BASE_URL = "https://anitaku.bz/";
 const ajax_url = "https://ajax.gogocdn.net/";
 const popular_ongoing_url = `${ajax_url}ajax/page-recent-release-ongoing.html`;
 const recent_release_url = `${ajax_url}ajax/page-recent-release.html`;
@@ -556,11 +556,10 @@ const getDownloadLinks = async (id: string) => {
     let resol = {};
     const { data } = await axios.get(`${BASE_URL}${id}`, {
       headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Linux; Android 9; vivo 1916) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Mobile Safari/537.36",
-        Cookie: `auth=${await getGogoCookie()};`,
+        Cookie: `auth=${await getGogoCookie()}`,
       },
     });
+
     const $ = load(data);
     $("div#wrapper_bg").each((_index, element) => {
       const $element = $(element);
@@ -571,6 +570,7 @@ const getDownloadLinks = async (id: string) => {
         .attr("href");
       res.downloadLink = download;
     });
+    console.log(res.downloadLink)
     const links = $("div.cf-download").find("a");
     links.each((i, link) => {
       const a = $(link);
@@ -585,6 +585,7 @@ const getDownloadLinks = async (id: string) => {
     return res;
   } catch (error) {
     console.log(error);
+    throw error;
   }
 };
 

@@ -1,3 +1,5 @@
+// To be implemented
+
 import { Database } from "bun:sqlite";
 
 export class CustomProvider {
@@ -35,12 +37,6 @@ export class CustomProvider {
     `);
   }
 
-  /*
-    id is the id of the anime that must be the same as Anilist key
-    idMal is the id of the anime in the MAL
-    idGogo is the id of the anime in Gogoanime but can be use for our custom provider
-    idGogoDub is the id of the anime in Gogoanime dub but can be use for our custom provider
-  */
   addAnime(anime: {
     id?: number;
     idMal?: number;

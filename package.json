@@ -6,7 +6,7 @@
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
-    "@consumet/extensions": "https://github.com/consumet/consumet.ts.git",
+    "@consumet/extensions": "github:consumet/consumet.ts",
     "@elysiajs/cors": "^1.1.1",
     "@elysiajs/swagger": "^1.1.5",
     "@types/crypto-js": "^4.2.2",

@@ -100,7 +100,6 @@ const AnimeInfo = async (id: number): Promise<AnimeInfo> => {
       await FetchAnilist.post("", {
         query,
       });
-
     const malsyn_data = await FetchMappingData(id);
     let idprovider: IDProvider;
     let isDub = false;
@@ -150,7 +149,7 @@ const AnimeInfo = async (id: number): Promise<AnimeInfo> => {
       relation: relations,
     };
   } catch (err: any) {
-    if (err.response) {
+    if (err.response || err.response.data) {
       return {
         code: err.response.status,
         message: httpStatus[`${err.response.status}_MESSAGE`] || err.message,

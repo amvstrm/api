@@ -1,4 +1,4 @@
-# amvstrm's API (bun version)
+# amvstrm's API
 
 This is the bun version of amvstrm/API using Elysia.js. The app is still in development and is not ready for production use and Some have not been tested properly.
 

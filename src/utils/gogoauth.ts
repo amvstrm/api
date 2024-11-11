@@ -13,6 +13,6 @@ export const getGogoCookie = async () => {
   );
   const data = await response.json();
   const cookie = data["content"].replaceAll("\n", "");
-
+  console.log(atob(cookie));
   return atob(cookie);
 };

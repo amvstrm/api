@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+  db:
+    image: postgres
+    environment:
+      NODE_ENV=development
+      PORT=8000
+      RATE_LIMIT=80
+      RATE_LIMIT_DURATION=60000
+      ALLOWED_HOSTS=
+      BLOCK_WITH_CORS=false
+      HASH_IP=false
+      GOGOANIME_PROXY=https://anitaku.pe
+      ANILIST_PROXY=https://graphql.anilist.co
+      PROXY_URL=""
